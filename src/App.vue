@@ -1,19 +1,27 @@
 <script setup>
-  const projectName = 'Garden Design'
+import AppHeader from '@/components/layout/AppHeader.vue'
+import HeroSection from '@/components/sections/HeroSection.vue'
 </script>
 
 <template>
-  <main class="flex min-h-screen items-center justify-center bg-stone-100 px-6">
-    <div class="text-center">
-      <p class="mb-2 text-sm font-medium tracking-widest text-green-700 uppercase">
-        Zadanie rekrutacyjne
-      </p>
+  <AppHeader />
 
-      <h1 class="text-4xl font-semibold text-stone-900 md:text-6xl">
-        {{ projectName }}
-      </h1>
+  <main>
+    <HeroSection />
 
-      <p class="mt-5 text-stone-600">Vue + Tailwind test</p>
-    </div>
+    <section id="about" class="flex min-h-[500px] items-center justify-center bg-stone-100 px-6">
+      <h2 class="text-4xl font-semibold">O firmie</h2>
+    </section>
+
+    <section id="projects" class="flex min-h-[500px] items-center justify-center bg-[#dfc2a8] px-6">
+      <h2 class="text-4xl font-semibold">Realizacje</h2>
+    </section>
+
+    <section
+      id="contact"
+      class="flex min-h-[500px] items-center justify-center bg-[#1d6337] px-6 text-white"
+    >
+      <h2 class="text-4xl font-semibold">Kontakt</h2>
+    </section>
   </main>
 </template>

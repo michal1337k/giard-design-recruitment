@@ -1,8 +1,23 @@
 @import 'tailwindcss';
 
-/*  
-  Płynne przewijanie
+/*
+  Zmienne globalne
 */
+:root {
+  --page-max-width: 1200px;
+  --page-gutter: 24px;
+
+  --color-dark: #151515;
+  --color-green: #1d6337;
+  --color-beige: #dfc2a8;
+  --color-cream: #f6f2ee;
+
+  font-family: Arial, Helvetica, sans-serif;
+
+  color: var(--color-dark);
+  background-color: var(--color-cream);
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -19,7 +34,34 @@ select {
   font: inherit;
 }
 
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  cursor: pointer;
+}
+
 img {
   display: block;
   max-width: 100%;
+}
+
+/*
+  Główna siatka całej strony
+*/
+.page-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(var(--page-gutter), 1fr)
+    minmax(0, calc(var(--page-max-width) / 2))
+    minmax(0, calc(var(--page-max-width) / 2))
+    minmax(var(--page-gutter), 1fr);
+}
+
+@media (width < 640px) {
+  :root {
+    --page-gutter: 16px;
+  }
 }
