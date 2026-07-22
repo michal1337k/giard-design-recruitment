@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
@@ -13,11 +15,17 @@
     "@tailwindcss/vite": "^4.3.3",
     "imagesloaded": "^5.0.0",
     "masonry-layout": "^4.2.2",
+    "swiper": "^14.0.6",
     "tailwindcss": "^4.3.3",
     "vue": "rc"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@vitejs/plugin-vue": "^6.0.8",
+    "eslint": "^10.7.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-vue": "^10.10.0",
+    "globals": "^17.7.0",
     "prettier": "3.9.5",
     "vite": "^8.1.5",
     "vite-plugin-vue-devtools": "^8.1.5"
