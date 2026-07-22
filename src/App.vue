@@ -3,6 +3,7 @@ import AppHeader from '@/components/layout/AppHeader.vue'
 import HeroSection from '@/components/sections/HeroSection.vue'
 import OfferSection from '@/components/sections/OfferSection.vue'
 import AboutSection from '@/components/sections/AboutSection.vue'
+import ProjectsSection from '@/components/sections/ProjectsSection.vue'
 </script>
 
 <template>
@@ -12,10 +13,7 @@ import AboutSection from '@/components/sections/AboutSection.vue'
     <HeroSection />
     <OfferSection />
     <AboutSection />
-
-    <section id="projects" class="flex min-h-[500px] items-center justify-center bg-[#dfc2a8] px-6">
-      <h2 class="text-4xl font-semibold">Realizacje</h2>
-    </section>
+    <ProjectsSection />
 
     <section
       id="contact"
