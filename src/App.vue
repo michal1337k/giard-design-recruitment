@@ -8,6 +8,9 @@ import HeroSection from '@/components/sections/HeroSection.vue'
 
   <main>
     <HeroSection />
+    <section id="offer" class="flex min-h-[500px] items-center justify-center bg-[#f6f2ee] px-6">
+      <h2 class="text-4xl font-semibold">Oferta</h2>
+    </section>
 
     <section id="about" class="flex min-h-[500px] items-center justify-center bg-stone-100 px-6">
       <h2 class="text-4xl font-semibold">O firmie</h2>
