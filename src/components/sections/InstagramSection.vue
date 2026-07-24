@@ -1,43 +1,60 @@
+<script setup>
+import { instagramSection } from '@/data/instagramSection'
+</script>
+
 <template>
-  <section id="contact" class="bg-[var(--color-cream)] py-14 md:py-20 lg:py-24">
-    <div class="page-grid">
-      <div class="col-start-2 col-end-4">
-        <div
-          class="bg-[var(--color-green)] px-7 py-12 text-white sm:px-10 md:mx-8 md:px-14 md:py-14 lg:mx-16 lg:px-20 lg:py-16"
+  <section
+    id="instagram"
+    class="bg-[var(--color-cream)] px-[var(--page-gutter)] py-20 md:py-24 lg:h-[588px] lg:px-0 lg:pt-[60px] lg:pb-0"
+  >
+    <div
+      class="mx-auto flex w-full max-w-[1040px] flex-col gap-10 bg-[var(--color-green)] px-8 py-10 text-[var(--color-cream)] sm:px-12 sm:py-12 lg:h-[358px] lg:w-[1040px] lg:max-w-none lg:flex-row lg:items-end lg:gap-[64px] lg:px-[110px] lg:py-[120px]"
+    >
+      <h2
+        class="w-full text-[32px] leading-[38px] md:text-[36px] md:leading-[43px] lg:h-[96px] lg:w-[599px] lg:shrink-0 lg:text-[40px] lg:leading-[48px]"
+      >
+        <span
+          v-for="(line, lineIndex) in instagramSection.titleLines"
+          :key="lineIndex"
+          class="block"
         >
-          <div
-            class="grid items-center gap-10 md:grid-cols-[minmax(0,1.6fr)_minmax(190px,0.7fr)] md:gap-14"
+          <span
+            v-for="(part, partIndex) in line"
+            :key="`${lineIndex}-${partIndex}`"
+            :class="
+              part.type === 'heading'
+                ? '[font-family:var(--font-heading)] font-normal tracking-[-2px]'
+                : '[font-family:var(--font-body)] font-medium italic tracking-[1px]'
+            "
           >
-            <!-- główna treść -->
-            <h2
-              class="max-w-[560px] text-3xl leading-[1.15] font-normal tracking-[-0.035em] md:text-4xl lg:text-5xl"
-            >
-              Zostańmy w kontakcie!
+            {{ part.text }}
+          </span>
+        </span>
+      </h2>
 
-              <span class="block">
-                Znajdziesz nas na
-                <em>Instagramie.</em>
-              </span>
-            </h2>
+      <div
+        class="flex w-full flex-col items-start gap-[24px] lg:h-[118px] lg:w-[157px] lg:shrink-0"
+      >
+        <p
+          class="text-[16px] leading-[24px] font-normal tracking-[-0.01em] text-[var(--color-cream)] lg:h-[48px] lg:w-[157px]"
+        >
+          <span
+            v-for="line in instagramSection.descriptionLines"
+            :key="line"
+            class="block whitespace-nowrap"
+          >
+            {{ line }}
+          </span>
+        </p>
 
-            <!-- prawa część -->
-            <div class="md:justify-self-end">
-              <p class="max-w-[180px] text-sm leading-5 text-white/80">
-                Śledź nasze najnowsze realizacje!
-              </p>
-
-              <a
-                href="https://www.instagram.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="mt-5 inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-medium text-[var(--color-green)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(0,0,0,0.18)] active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--color-green)] focus-visible:outline-none"
-                aria-label="Otwórz profil GiardDesign na Instagramie w nowej karcie"
-              >
-                Instagram
-              </a>
-            </div>
-          </div>
-        </div>
+        <a
+          :href="instagramSection.buttonHref"
+          target="_blank"
+          rel="noreferrer"
+          class="inline-flex h-[46px] w-[124px] items-center justify-center rounded-[200px] bg-[var(--color-cream)] px-[24px] pt-[10px] pb-[12px] text-[16px] leading-[24px] font-normal tracking-normal text-[var(--color-green)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(0,0,0,0.16)] active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-[var(--color-cream)] focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--color-green)] focus-visible:outline-none"
+        >
+          {{ instagramSection.buttonLabel }}
+        </a>
       </div>
     </div>
   </section>
