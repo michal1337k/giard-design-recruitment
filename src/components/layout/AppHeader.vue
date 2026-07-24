@@ -193,7 +193,7 @@ onUnmounted(() => {
               class="flex h-[21px] w-[59px] items-center gap-[5px] whitespace-nowrap transition-opacity hover:opacity-60"
               aria-controls="desktop-offer-menu"
               :aria-expanded="isDesktopOfferOpen"
-              @click="toggleDesktopOffer"
+              @click.stop="toggleDesktopOffer"
             >
               <span class="h-[21px] w-[42px] text-left"> Oferta </span>
 
@@ -211,6 +211,30 @@ onUnmounted(() => {
                 <path d="m2 4 4 4 4-4" />
               </svg>
             </button>
+
+            <Transition name="dropdown">
+              <div
+                v-if="isDesktopOfferOpen"
+                id="desktop-offer-menu"
+                class="absolute top-[48px] left-0 z-[70] w-72 rounded-2xl bg-white p-3 shadow-xl"
+              >
+                <a
+                  v-for="item in offerLinks"
+                  :key="item.label"
+                  :href="item.href"
+                  class="block rounded-xl px-4 py-3 transition-colors hover:bg-stone-100"
+                  @click="handleNavigationClick"
+                >
+                  <span class="block font-medium">
+                    {{ item.label }}
+                  </span>
+
+                  <span class="mt-1 block text-xs leading-5 text-stone-500">
+                    {{ item.description }}
+                  </span>
+                </a>
+              </div>
+            </Transition>
           </div>
 
           <a
