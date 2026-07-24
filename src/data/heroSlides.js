@@ -6,10 +6,13 @@ export const heroSlides = [
   {
     id: 'modern-garden',
 
-    title: 'Nowoczesna aranżacja Twojego ogrodu',
+    titleLines: ['Nowoczesna', 'aranżacja', 'Twojego ogrodu'],
 
-    description:
-      'Marka GiardDesign to wieloletnie doświadczenie i wysoka estetyka realizacji. Oferujemy kompleksowy zakres usług z indywidualnym podejściem do każdego projektu.',
+    descriptionLines: [
+      'Marka GiardDesign to wieloletnie doświadczenie i wysoka',
+      'estetyka realizacji. Oferujemy kompleksowy zakres usług',
+      'z indywidualnym podejściem do każdego projektu.',
+    ],
 
     image: hero01,
 
@@ -31,10 +34,13 @@ export const heroSlides = [
   {
     id: 'personal-project',
 
-    title: 'Ogród zaprojektowany dla Ciebie',
+    titleLines: ['Ogród', 'zaprojektowany', 'dla Ciebie'],
 
-    description:
-      'Łączymy potrzeby domowników z charakterem przestrzeni. Tworzymy funkcjonalne projekty, które pozostają piękne przez wiele lat.',
+    descriptionLines: [
+      'Łączymy potrzeby domowników z charakterem przestrzeni.',
+      'Tworzymy funkcjonalne projekty, które',
+      'pozostają piękne przez wiele lat.',
+    ],
 
     image: hero02,
 
@@ -56,10 +62,13 @@ export const heroSlides = [
   {
     id: 'complete-realisation',
 
-    title: 'Od pierwszego pomysłu do realizacji',
+    titleLines: ['Od pierwszego', 'pomysłu', 'do realizacji'],
 
-    description:
-      'Prowadzimy inwestycję od projektu i wizualizacji aż po wykonanie ogrodu. Każdy etap realizujemy z dbałością o najmniejszy detal.',
+    descriptionLines: [
+      'Prowadzimy inwestycję od projektu i wizualizacji',
+      'aż po wykonanie ogrodu. Każdy etap realizujemy',
+      'z dbałością o najmniejszy detal',
+    ],
 
     image: hero03,
 

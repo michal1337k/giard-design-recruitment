@@ -1,5 +1,6 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import logo from '@/assets/brand/giarddesign-logo.svg'
 
 const isDesktopOfferOpen = ref(false)
 const isMobileMenuOpen = ref(false)
@@ -174,66 +175,47 @@ onUnmounted(() => {
       <div class="relative col-start-2 col-end-4 flex h-[72px] items-center justify-between">
         <a
           href="#intro"
-          class="text-lg font-semibold tracking-[-0.04em]"
+          class="flex h-[19px] w-[114.37px] shrink-0 items-center"
           aria-label="Przejdź na początek strony"
           @click="handleNavigationClick"
         >
-          giard<span class="font-normal">design</span>
+          <img :src="logo" alt="GiardDesign" class="h-[19px] w-[114.37px]" />
         </a>
 
-        <!-- Nawigacja desktopowa -->
-        <nav class="hidden items-center gap-8 text-sm lg:flex" aria-label="Główna nawigacja">
-          <div class="relative">
+        <!-- nawigacja desktopowa -->
+        <nav
+          class="hidden h-[24px] w-[442px] shrink-0 items-center justify-between text-[14px] leading-[21px] font-normal tracking-[-0.14px] lg:flex"
+          aria-label="Główna nawigacja"
+        >
+          <div class="relative flex h-[21px] w-[59px] shrink-0 items-center">
             <button
               type="button"
-              class="flex items-center gap-2 transition-opacity hover:opacity-60"
+              class="flex h-[21px] w-[59px] items-center gap-[5px] whitespace-nowrap transition-opacity hover:opacity-60"
               aria-controls="desktop-offer-menu"
               :aria-expanded="isDesktopOfferOpen"
               @click="toggleDesktopOffer"
             >
-              Oferta
+              <span class="h-[21px] w-[42px] text-left"> Oferta </span>
 
-              <span
-                class="text-xs transition-transform duration-300"
+              <svg
+                class="size-[12px] shrink-0 transition-transform duration-300"
                 :class="{ 'rotate-180': isDesktopOfferOpen }"
+                viewBox="0 0 12 12"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
                 aria-hidden="true"
               >
-                ▼
-              </span>
+                <path d="m2 4 4 4 4-4" />
+              </svg>
             </button>
-
-            <!--
-              Transition animuje element pojawiający się
-              lub znikający przez `v-if`.
-            -->
-            <Transition name="dropdown">
-              <div
-                v-if="isDesktopOfferOpen"
-                id="desktop-offer-menu"
-                class="absolute top-[calc(100%+24px)] left-0 w-72 rounded-2xl bg-white p-3 shadow-xl"
-              >
-                <a
-                  v-for="item in offerLinks"
-                  :key="item.label"
-                  :href="item.href"
-                  class="block rounded-xl px-4 py-3 transition-colors hover:bg-stone-100"
-                  @click="handleNavigationClick"
-                >
-                  <span class="block font-medium">
-                    {{ item.label }}
-                  </span>
-
-                  <span class="mt-1 block text-xs leading-5 text-stone-500">
-                    {{ item.description }}
-                  </span>
-                </a>
-              </div>
-            </Transition>
           </div>
 
           <a
             href="#about"
-            class="transition-opacity hover:opacity-60"
+            class="flex h-[21px] w-[51px] shrink-0 items-center whitespace-nowrap transition-opacity hover:opacity-60"
             @click="handleNavigationClick"
           >
             O firmie
@@ -241,7 +223,7 @@ onUnmounted(() => {
 
           <a
             href="#projects"
-            class="transition-opacity hover:opacity-60"
+            class="flex h-[21px] w-[68px] shrink-0 items-center whitespace-nowrap transition-opacity hover:opacity-60"
             @click="handleNavigationClick"
           >
             Realizacje
@@ -249,35 +231,36 @@ onUnmounted(() => {
 
           <a
             href="#contact"
-            class="transition-opacity hover:opacity-60"
+            class="flex h-[21px] w-[50px] shrink-0 items-center whitespace-nowrap transition-opacity hover:opacity-60"
             @click="handleNavigationClick"
           >
             Kontakt
           </a>
 
+          <!-- ikona lupy-->
           <button
             type="button"
-            class="flex size-10 items-center justify-center rounded-full transition-colors hover:bg-stone-100"
+            class="flex size-[24px] shrink-0 items-center justify-center transition-opacity hover:opacity-60"
             aria-label="Otwórz wyszukiwarkę"
             :aria-expanded="isSearchOpen"
             @click="toggleSearch"
           >
-            <!-- Ikona lupy jako SVG -->
             <svg
-              class="size-5"
-              viewBox="0 0 24 24"
+              class="h-[19.5px] w-[19px]"
+              viewBox="0 0 20 20"
               fill="none"
               stroke="currentColor"
-              stroke-width="1.8"
+              stroke-width="1.4"
+              stroke-linecap="round"
               aria-hidden="true"
             >
-              <circle cx="11" cy="11" r="7" />
-              <path d="m20 20-4-4" />
+              <circle cx="8.5" cy="8.5" r="6.25" />
+              <path d="m13.25 13.25 4.5 4.5" />
             </svg>
           </button>
         </nav>
 
-        <!-- Przycisk menu mobilnego - animacja zmiany hamburgera w X -->
+        <!-- przycisk menu mobilnego - animacja zmiany hamburgera w X -->
         <button
           type="button"
           class="relative size-10 lg:hidden"

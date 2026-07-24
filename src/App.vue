@@ -7,6 +7,10 @@ import OfferSection from '@/components/sections/OfferSection.vue'
 import AboutSection from '@/components/sections/AboutSection.vue'
 import ProjectsSection from '@/components/sections/ProjectsSection.vue'
 import InstagramSection from '@/components/sections/InstagramSection.vue'
+
+// ramka do porównania
+import DesignOverlay from '@/components/dev/DesignOverlay.vue'
+const isDevelopment = import.meta.env.DEV
 </script>
 
 <template>
@@ -21,4 +25,6 @@ import InstagramSection from '@/components/sections/InstagramSection.vue'
   </main>
 
   <AppFooter />
+
+  <DesignOverlay v-if="isDevelopment" />
 </template>

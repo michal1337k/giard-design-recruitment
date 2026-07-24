@@ -46,7 +46,7 @@ function handleSlideChange(swiper) {
 }
 
 function showPreviousSlide() {
-  if (!swiperInstance || swiperInstance.destroyed || swiperInstance.animating) {
+  if (!swiperInstance || swiperInstance.destroyed) {
     return
   }
 
@@ -54,7 +54,7 @@ function showPreviousSlide() {
 }
 
 function showNextSlide() {
-  if (!swiperInstance || swiperInstance.destroyed || swiperInstance.animating) {
+  if (!swiperInstance || swiperInstance.destroyed) {
     return
   }
 
@@ -111,50 +111,87 @@ onUnmounted(() => {
       @slide-change="handleSlideChange"
     >
       <SwiperSlide v-for="(slide, index) in heroSlides" :key="slide.id">
-        <article class="page-grid bg-[var(--color-beige)]">
+        <article class="page-grid bg-[var(--color-beige)] lg:h-[737px]">
           <!-- lewa część z tekstem -->
           <div
-            class="col-start-2 col-end-4 row-start-1 flex min-h-[520px] items-center py-16 md:min-h-[580px] md:py-20 lg:col-end-3 lg:min-h-[680px] lg:pr-16"
+            class="col-start-2 col-end-4 row-start-1 flex min-h-[520px] items-center py-16 md:min-h-[580px] md:py-20 lg:col-end-3 lg:h-[737px] lg:min-h-0 lg:py-0"
           >
-            <div class="hero-copy max-w-[520px]">
-              <h1
-                class="text-[clamp(2.75rem,5vw,4.5rem)] leading-[1.04] font-medium tracking-[-0.045em]"
-              >
-                {{ slide.title }}
-              </h1>
+            <div
+              class="hero-copy flex w-full max-w-[599px] flex-col gap-[72px] lg:h-[448px] lg:max-w-[599px]"
+            >
+              <!-- grupa Text -->
+              <div class="flex flex-col gap-[44px]">
+                <h1
+                  class="font-heading w-full text-[42px] leading-[48px] font-medium tracking-normal md:text-[50px] md:leading-[58px] lg:h-[210px] lg:w-[599px] lg:text-[60px] lg:leading-[70px]"
+                >
+                  <!-- if do wymuszenia nie przeskakiwania tytułu z 1 slajdu, 1:1 do figmy -->
+                  <template v-if="slide.titleLines">
+                    <span v-for="line in slide.titleLines" :key="line" class="lg:block">
+                      {{ line }}
 
-              <p class="mt-8 max-w-[440px] text-sm leading-6 text-stone-700">
-                {{ slide.description }}
-              </p>
+                      <span class="lg:hidden">&nbsp;</span>
+                    </span>
+                  </template>
 
-              <div class="mt-10 flex flex-wrap gap-4">
-                <!-- główny przycisk -->
+                  <template v-else>
+                    {{ slide.title }}
+                  </template>
+                </h1>
+
+                <!-- if do wymuszenia nie przeskakiwania opisu z 1 slajdu, 1:1 do figmy -->
+                <p
+                  class="w-full max-w-[489px] text-[16px] leading-[24px] font-normal text-stone-700 lg:h-[72px] lg:w-[489px]"
+                >
+                  <template v-if="slide.descriptionLines">
+                    <span
+                      v-for="(line, lineIndex) in slide.descriptionLines"
+                      :key="line"
+                      class="lg:block"
+                    >
+                      {{ line }}
+
+                      <span v-if="lineIndex < slide.descriptionLines.length - 1" class="lg:hidden">
+                        &nbsp;
+                      </span>
+                    </span>
+                  </template>
+
+                  <template v-else>
+                    {{ slide.description }}
+                  </template>
+                </p>
+              </div>
+
+              <!-- grupa Buttons -->
+              <div class="flex w-full flex-wrap gap-4 lg:w-[493px] lg:flex-nowrap lg:gap-[36px]">
+                <!-- lewy przycisk -->
                 <a
                   :href="slide.primaryAction.href"
-                  class="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--color-green)] px-6 py-3 text-sm text-white transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(0,0,0,0.16)] active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-[var(--color-green)] focus-visible:ring-offset-4 focus-visible:outline-none"
+                  class="inline-flex h-[50px] w-full shrink-0 items-center justify-center whitespace-nowrap rounded-[200px] bg-[var(--color-green)] px-[24px] text-[16px] leading-[24px] font-normal text-[var(--color-cream)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(0,0,0,0.16)] active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-[var(--color-green)] focus-visible:ring-offset-4 focus-visible:outline-none sm:w-auto lg:w-[208px]"
                 >
                   {{ slide.primaryAction.label }}
                 </a>
 
-                <!-- drugorzędny przycisk -->
+                <!-- prawy przycisk -->
                 <a
                   :href="slide.secondaryAction.href"
-                  class="group inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[var(--color-green)] px-6 py-3 text-sm text-[var(--color-green)] transition-all duration-300 hover:-translate-y-1 hover:bg-[var(--color-green)] hover:text-white active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-[var(--color-green)] focus-visible:ring-offset-4 focus-visible:outline-none"
+                  class="group inline-flex h-[50px] w-full shrink-0 items-center justify-between whitespace-nowrap rounded-[200px] border border-[var(--color-green)] bg-transparent px-[22px] text-[16px] leading-[24px] font-normal text-[var(--color-green)] transition-all duration-300 hover:-translate-y-1 hover:bg-[var(--color-green)] hover:text-white active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-[var(--color-green)] focus-visible:ring-offset-4 focus-visible:outline-none sm:w-auto lg:w-[249px]"
                 >
-                  {{ slide.secondaryAction.label }}
-
+                  <span>
+                    {{ slide.secondaryAction.label }}
+                  </span>
                   <svg
-                    class="size-4 transition-transform duration-300 group-hover:translate-y-1"
-                    viewBox="0 0 24 24"
+                    class="size-[16px] shrink-0 transition-transform duration-300 group-hover:translate-y-1"
+                    viewBox="0 0 16 16"
                     fill="none"
                     stroke="currentColor"
-                    stroke-width="1.8"
+                    stroke-width="1.3"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     aria-hidden="true"
                   >
-                    <path d="M12 5v14" />
-                    <path d="m6 13 6 6 6-6" />
+                    <path d="M8 1v14" />
+                    <path d="m2 9 6 6 6-6" />
                   </svg>
                 </a>
               </div>
@@ -163,15 +200,13 @@ onUnmounted(() => {
 
           <!-- prawa część ze zdjęciem -->
           <div
-            class="relative col-start-1 col-end-5 row-start-2 min-h-[380px] overflow-hidden md:min-h-[480px] lg:col-start-3 lg:row-start-1 lg:min-h-[680px]"
+            class="relative col-start-1 col-end-5 row-start-2 min-h-[380px] overflow-hidden md:min-h-[480px] lg:col-start-3 lg:col-end-5 lg:row-start-1 lg:h-[737px] lg:w-[688px] lg:min-h-0 lg:justify-self-end"
           >
             <img
               :src="slide.image"
               :alt="slide.imageAlt"
               class="hero-image absolute inset-0 h-full w-full object-cover"
-              :style="{
-                objectPosition: slide.objectPosition,
-              }"
+              :style="{ objectPosition: slide.objectPosition }"
               :loading="index === 0 ? 'eager' : 'lazy'"
               :fetchpriority="index === 0 ? 'high' : 'auto'"
               decoding="async"
@@ -188,47 +223,47 @@ onUnmounted(() => {
 
     <!-- nawigacja slidera -->
     <div
-      class="absolute right-0 bottom-0 z-20 flex divide-x divide-stone-200 bg-white shadow-[-10px_-10px_30px_rgba(0,0,0,0.04)]"
+      class="absolute right-0 bottom-0 z-50 flex h-[96px] w-[192px] items-center gap-[32px] bg-[var(--color-cream)] px-[32px]"
     >
       <button
         type="button"
-        class="group flex size-14 items-center justify-center transition-colors duration-300 hover:bg-stone-100 active:bg-stone-200 md:size-16"
+        class="group flex size-[48px] shrink-0 items-center justify-center transition-opacity duration-300 hover:opacity-55 active:scale-95"
         aria-label="Pokaż poprzedni slajd"
-        @click="showPreviousSlide"
+        @click.stop="showPreviousSlide"
       >
         <svg
-          class="size-5 transition-transform duration-300 group-hover:-translate-x-1"
-          viewBox="0 0 24 24"
+          class="h-[16px] w-[24.29px] shrink-0 transition-transform duration-300 group-hover:-translate-x-1"
+          viewBox="0 0 24.29 16"
           fill="none"
           stroke="currentColor"
-          stroke-width="1.8"
+          stroke-width="1.5"
           stroke-linecap="round"
           stroke-linejoin="round"
           aria-hidden="true"
         >
-          <path d="M19 12H5" />
-          <path d="m11 18-6-6 6-6" />
+          <path d="M24.29 8H1" />
+          <path d="M8 1 1 8l7 7" />
         </svg>
       </button>
 
       <button
         type="button"
-        class="group flex size-14 items-center justify-center transition-colors duration-300 hover:bg-stone-100 active:bg-stone-200 md:size-16"
+        class="group flex size-[48px] shrink-0 items-center justify-center transition-opacity duration-300 hover:opacity-55 active:scale-95"
         aria-label="Pokaż następny slajd"
-        @click="showNextSlide"
+        @click.stop="showNextSlide"
       >
         <svg
-          class="size-5 transition-transform duration-300 group-hover:translate-x-1"
-          viewBox="0 0 24 24"
+          class="h-[16px] w-[24.29px] shrink-0 transition-transform duration-300 group-hover:translate-x-1"
+          viewBox="0 0 24.29 16"
           fill="none"
           stroke="currentColor"
-          stroke-width="1.8"
+          stroke-width="1.5"
           stroke-linecap="round"
           stroke-linejoin="round"
           aria-hidden="true"
         >
-          <path d="M5 12h14" />
-          <path d="m13 6 6 6-6 6" />
+          <path d="M0 8h23.29" />
+          <path d="m16.29 1 7 7-7 7" />
         </svg>
       </button>
     </div>
