@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 
 import Masonry from 'masonry-layout'
 import imagesLoaded from 'imagesloaded'
@@ -7,32 +7,13 @@ import imagesLoaded from 'imagesloaded'
 import ProjectLightbox from '@/components/ui/ProjectLightbox.vue'
 import { projects } from '@/data/projects'
 
-/* liczba zdjęć wyświetlana na początku */
-const INITIAL_VISIBLE_COUNT = 6
-
-/* liczba kolejnych zdjęć pokazywana po kliknięciu „Rozwiń” */
-const PROJECTS_PER_LOAD = 3
-
-/* referencja do elementu galerii znajdującego się w template */
 const galleryGrid = ref(null)
 
-/* liczba aktualnie widocznych realizacji */
-const visibleCount = ref(Math.min(INITIAL_VISIBLE_COUNT, projects.length))
+const isProjectsExpanded = ref(false)
 
-/* indeks zdjęcia otwartego w popupie.
-    `null` oznacza, że popup jest zamknięty.
-*/
 const activeProjectIndex = ref(null)
 
 let masonryInstance = null
-
-const visibleProjects = computed(() => {
-  return projects.slice(0, visibleCount.value)
-})
-
-const hasMoreProjects = computed(() => {
-  return visibleCount.value < projects.length
-})
 
 const isLightboxOpen = computed(() => {
   return activeProjectIndex.value !== null
@@ -43,7 +24,7 @@ const activeProject = computed(() => {
     return null
   }
 
-  return visibleProjects.value[activeProjectIndex.value] ?? null
+  return projects[activeProjectIndex.value] ?? null
 })
 
 function refreshMasonry() {
@@ -55,18 +36,14 @@ function refreshMasonry() {
     masonryInstance = new Masonry(galleryGrid.value, {
       itemSelector: '.gallery-item',
 
-      /* szerokość pojedynczej kolumny. */
       columnWidth: '.gallery-sizer',
-
-      gutter: 24,
+      gutter: '.gallery-gutter',
 
       percentPosition: true,
 
-      /* naturalna kolejność od lewej do prawej */
       horizontalOrder: true,
 
-      transitionDuration: '0.35s',
-      stagger: 40,
+      transitionDuration: '0s',
     })
   } else {
     masonryInstance.reloadItems()
@@ -78,8 +55,8 @@ function refreshMasonry() {
   })
 }
 
-function showMoreProjects() {
-  visibleCount.value = Math.min(visibleCount.value + PROJECTS_PER_LOAD, projects.length)
+function revealProjects() {
+  isProjectsExpanded.value = true
 }
 
 function openLightbox(index) {
@@ -91,35 +68,26 @@ function closeLightbox() {
 }
 
 function showPreviousProject() {
-  const projectsCount = visibleProjects.value.length
+  const projectsCount = projects.length
 
   if (projectsCount === 0 || activeProjectIndex.value === null) {
     return
   }
 
-  /* będąc na pierwszym zdjęciu, przejdzie do ostatniego */
   activeProjectIndex.value = (activeProjectIndex.value - 1 + projectsCount) % projectsCount
 }
 
 function showNextProject() {
-  const projectsCount = visibleProjects.value.length
+  const projectsCount = projects.length
 
   if (projectsCount === 0 || activeProjectIndex.value === null) {
     return
   }
 
-  /* będąc na ostatnim zdjęciu, przejdzie do pierwszego */
   activeProjectIndex.value = (activeProjectIndex.value + 1) % projectsCount
 }
 
 onMounted(async () => {
-  await nextTick()
-
-  refreshMasonry()
-})
-
-/* zabezpieczenie na wypadek, gdy visibleCount zostanie zmienione z innego miejsca */
-watch(visibleCount, async () => {
   await nextTick()
   refreshMasonry()
 })
@@ -131,119 +99,125 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section id="projects" class="bg-[var(--color-beige)] py-24 md:py-28 lg:py-36">
-    <div class="page-grid">
-      <div class="col-start-2 col-end-4">
-        <!-- nagłówek sekcji -->
-        <div>
-          <p class="text-xs font-medium tracking-[0.16em] text-[var(--color-green)] uppercase">
-            Realizacje
-          </p>
+  <section
+    id="projects"
+    class="bg-[var(--color-beige)] pt-20 pb-12 md:pt-24 lg:pt-[120px] lg:pb-[44px]"
+  >
+    <div class="flex flex-col gap-[16px] px-[var(--page-gutter)] lg:px-0 lg:pl-[160px]">
+      <p
+        class="w-fit text-[12px] leading-[18px] font-normal tracking-[-0.01em] text-[var(--color-green)]"
+      >
+        Realizacje
+      </p>
 
-          <h2 class="mt-4 text-4xl leading-tight font-medium tracking-[-0.04em] md:text-5xl">
-            Nasze
-            <em class="font-normal">projekty</em>
-          </h2>
-        </div>
+      <h2
+        class="text-[40px] leading-[46px] md:text-[44px] md:leading-[51px] lg:text-[48px] lg:leading-[55px]"
+      >
+        <span class="[font-family:var(--font-heading)] font-medium tracking-[-0.03em]"> Nasze </span
+        ><span class="[font-family:var(--font-body)] font-medium italic tracking-normal">
+          projekty
+        </span>
+      </h2>
+    </div>
 
-        <div class="relative mt-14">
-          <div ref="galleryGrid" class="gallery-grid">
-            <!-- szerokość kolumny -->
-            <div class="gallery-sizer" aria-hidden="true"></div>
+    <div id="projects-gallery" class="relative mt-16 w-full overflow-hidden lg:mt-[96px]">
+      <div ref="galleryGrid" class="gallery-grid relative w-full">
+        <!-- szerokość pojedynczej kolumny. -->
+        <div class="gallery-sizer" aria-hidden="true"></div>
+        <div class="gallery-gutter" aria-hidden="true"></div>
 
-            <button
-              v-for="(project, index) in visibleProjects"
-              :key="project.id"
-              type="button"
-              class="gallery-item group relative block cursor-zoom-in overflow-hidden border-0 bg-transparent p-0 text-left focus-visible:ring-2 focus-visible:ring-[var(--color-green)] focus-visible:ring-offset-4 focus-visible:outline-none"
-              :aria-label="`Otwórz zdjęcie: ${project.title}`"
-              @click="openLightbox(index)"
+        <button
+          v-for="(project, index) in projects"
+          :key="project.id"
+          type="button"
+          class="gallery-item group relative block cursor-zoom-in overflow-hidden border-0 bg-transparent p-0 text-left focus-visible:ring-2 focus-visible:ring-[var(--color-green)] focus-visible:ring-offset-4 focus-visible:outline-none"
+          :aria-label="`Otwórz zdjęcie: ${project.title}`"
+          @click="openLightbox(index)"
+        >
+          <img
+            :src="project.image"
+            :alt="project.alt"
+            class="h-auto w-full transition-transform duration-700 ease-out group-hover:scale-[1.04] group-active:scale-[0.99]"
+            :loading="index < 3 ? 'eager' : 'lazy'"
+            decoding="async"
+          />
+
+          <span
+            class="absolute inset-0 flex items-end bg-gradient-to-t from-black/70 via-black/5 to-transparent p-6 text-white opacity-0 transition-opacity duration-400 group-hover:opacity-100 group-focus-visible:opacity-100"
+          >
+            <span>
+              <span class="block text-xs text-white/70">
+                {{ project.category }}
+              </span>
+
+              <span class="mt-1 block text-lg font-medium">
+                {{ project.title }}
+              </span>
+            </span>
+          </span>
+
+          <span
+            class="absolute top-4 right-4 flex size-10 translate-y-2 items-center justify-center rounded-full bg-white text-black opacity-0 shadow-lg transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100"
+            aria-hidden="true"
+          >
+            <svg
+              class="size-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
             >
-              <img
-                :src="project.image"
-                :alt="project.alt"
-                class="h-auto w-full transition-transform duration-700 ease-out group-hover:scale-[1.04] group-active:scale-[0.99]"
-                loading="lazy"
-                decoding="async"
-              />
+              <circle cx="11" cy="11" r="6" />
+              <path d="m20 20-4.5-4.5" />
+              <path d="M11 8v6" />
+              <path d="M8 11h6" />
+            </svg>
+          </span>
+        </button>
+      </div>
 
-              <!-- warstwa widoczna po najechaniu -->
-              <span
-                class="absolute inset-0 flex items-end bg-gradient-to-t from-black/70 via-black/5 to-transparent p-6 text-white opacity-0 transition-opacity duration-400 group-hover:opacity-100 group-focus-visible:opacity-100"
-              >
-                <span>
-                  <span class="block text-xs text-white/70">
-                    {{ project.category }}
-                  </span>
-
-                  <span class="mt-1 block text-lg font-medium">
-                    {{ project.title }}
-                  </span>
-                </span>
-              </span>
-
-              <!-- ikona powiększenia -->
-              <span
-                class="absolute top-4 right-4 flex size-10 translate-y-2 items-center justify-center rounded-full bg-white text-black opacity-0 shadow-lg transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100"
-                aria-hidden="true"
-              >
-                <svg
-                  class="size-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                >
-                  <circle cx="11" cy="11" r="6" />
-                  <path d="m20 20-4.5-4.5" />
-                  <path d="M11 8v6" />
-                  <path d="M8 11h6" />
-                </svg>
-              </span>
-            </button>
-          </div>
-
+      <Transition name="projects-cover">
+        <div
+          v-if="!isProjectsExpanded"
+          class="projects-cover pointer-events-none absolute inset-0 z-20"
+        >
           <div
-            v-if="hasMoreProjects"
-            class="pointer-events-none absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-[var(--color-beige)] via-[var(--color-beige)]/80 to-transparent"
+            class="projects-gradient absolute inset-x-0 bottom-0 top-[45%] md:top-[38%] lg:top-[32.2034%]"
             aria-hidden="true"
           ></div>
 
-          <!-- przycisk rozwijający kolejne elementy -->
-          <div
-            v-if="hasMoreProjects"
-            class="pointer-events-none absolute inset-x-0 bottom-8 flex justify-center"
+          <button
+            type="button"
+            class="pointer-events-auto group absolute bottom-8 left-1/2 flex h-[50px] w-[123px] -translate-x-1/2 items-center gap-[8px] rounded-[200px] border border-[#111] px-[22px] pt-[12px] pb-[14px] text-[16px] leading-[24px] font-normal tracking-normal text-[#111] transition-colors duration-300 hover:bg-[#111] hover:text-[var(--color-beige)] active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-[#111] focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--color-beige)] focus-visible:outline-none lg:top-[93.45%] lg:bottom-auto"
+            aria-controls="projects-gallery"
+            :aria-expanded="isProjectsExpanded"
+            @click.stop="revealProjects"
           >
-            <button
-              type="button"
-              class="pointer-events-auto group inline-flex items-center gap-3 rounded-full border border-black/70 bg-[var(--color-beige)] px-6 py-3 text-sm transition-all duration-300 hover:bg-black hover:text-white active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-4 focus-visible:outline-none"
-              @click="showMoreProjects"
-            >
-              Rozwiń
+            <span class="w-[55px] whitespace-nowrap"> Rozwiń </span>
 
-              <svg
-                class="size-4 transition-transform duration-300 group-hover:translate-y-1"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </button>
-          </div>
+            <svg
+              class="size-[16px] shrink-0 transition-transform duration-300 group-hover:translate-y-1"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M8 1v14" />
+              <path d="m2 9 6 6 6-6" />
+            </svg>
+          </button>
         </div>
-      </div>
+      </Transition>
     </div>
 
     <ProjectLightbox
       :is-open="isLightboxOpen"
       :project="activeProject"
-      :show-navigation="visibleProjects.length > 1"
+      :show-navigation="projects.length > 1"
       @close="closeLightbox"
       @previous="showPreviousProject"
       @next="showNextProject"
@@ -252,29 +226,83 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* jedna kolumna na urządzeniach mobilnych */
+.gallery-grid {
+  width: 100%;
+}
+
+/* jedna kolumna na telefonach. */
 .gallery-sizer,
 .gallery-item {
   width: 100%;
+}
+
+.gallery-gutter {
+  width: 0;
 }
 
 .gallery-item {
   margin-bottom: 24px;
 }
 
-/* dwie kolumny na tabletach */
+.gallery-item:last-child {
+  margin-bottom: 0;
+}
+
+/* dwie kolumny na tabletach. */
 @media (width >= 768px) {
   .gallery-sizer,
   .gallery-item {
     width: calc((100% - 24px) / 2);
   }
+
+  .gallery-gutter {
+    width: 24px;
+  }
+
+  .gallery-item:nth-last-child(-n + 2) {
+    margin-bottom: 0;
+  }
 }
 
-/* trzy kolumny na desktopie */
+/* trzy kolumny na desktopie. */
 @media (width >= 1024px) {
   .gallery-sizer,
   .gallery-item {
-    width: calc((100% - 48px) / 3);
+    width: calc((100% - 86px) / 3);
+  }
+
+  .gallery-gutter {
+    width: 43px;
+  }
+
+  .gallery-item {
+    margin-bottom: 42px;
+  }
+
+  .gallery-item:nth-last-child(-n + 3) {
+    margin-bottom: 0;
+  }
+}
+
+.projects-gradient {
+  background: linear-gradient(to bottom, rgb(214 183 158 / 0%) 0%, rgb(220 193 171 / 100%) 100%);
+}
+
+.projects-cover-leave-active {
+  will-change: transform, opacity;
+  transition:
+    transform 550ms cubic-bezier(0.65, 0, 0.35, 1),
+    opacity 350ms ease-out;
+}
+
+.projects-cover-leave-to {
+  transform: translateY(105%);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .projects-cover-leave-active {
+    transition-duration: 1ms;
   }
 }
 </style>
