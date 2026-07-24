@@ -101,7 +101,7 @@ onUnmounted(() => {
 <template>
   <section
     id="projects"
-    class="bg-[var(--color-beige)] pt-20 pb-12 md:pt-24 lg:pt-[120px] lg:pb-[44px]"
+    class="bg-[var(--color-beige)] pt-20 pb-12 md:pt-24 lg:pt-[120px] lg:pb-[41px]"
   >
     <div class="flex flex-col gap-[16px] px-[var(--page-gutter)] lg:px-0 lg:pl-[160px]">
       <p
@@ -194,7 +194,7 @@ onUnmounted(() => {
             :aria-expanded="isProjectsExpanded"
             @click.stop="revealProjects"
           >
-            <span class="w-[55px] whitespace-nowrap"> Rozwiń </span>
+            <span class="whitespace-nowrap"> Rozwiń </span>
 
             <svg
               class="size-[16px] shrink-0 transition-transform duration-300 group-hover:translate-y-1"
@@ -226,10 +226,6 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.gallery-grid {
-  width: 100%;
-}
-
 /* jedna kolumna na telefonach. */
 .gallery-sizer,
 .gallery-item {

@@ -172,7 +172,7 @@ onUnmounted(() => {
 <template>
   <header class="relative z-50 bg-white">
     <div class="page-grid">
-      <div class="relative col-start-2 col-end-4 flex h-[72px] items-center justify-between">
+      <div class="col-span-full flex h-[72px] items-center justify-between">
         <a
           href="#intro"
           class="flex h-[19px] w-[114.37px] shrink-0 items-center"
@@ -446,13 +446,14 @@ onUnmounted(() => {
       ></button>
 
       <section
-        class="search-sheet relative bg-white shadow-2xl"
+        class="search-sheet relative w-full bg-white shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-label="Wyszukiwarka"
       >
         <div class="page-grid">
-          <div class="col-start-2 col-end-4 py-8 md:py-12">
+          <!-- Cała szerokość globalnej siatki. -->
+          <div class="col-span-full py-8 md:py-12">
             <div class="flex items-center justify-between gap-6">
               <p class="text-sm font-medium tracking-widest text-stone-500 uppercase">
                 Wyszukiwarka

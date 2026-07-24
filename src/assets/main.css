@@ -21,6 +21,44 @@
   background-color: var(--color-cream);
 }
 
+/*
+  Globalna siatka strony.
+ 
+  Mobile:  4 kolumny
+  Tablet:  8 kolumn
+  Desktop: 12 kolumn zgodnych z Figmą
+ */
+.page-grid {
+  --page-grid-width: calc(100vw - 48px);
+  --grid-gutter: 16px;
+
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: var(--grid-gutter);
+
+  width: var(--page-grid-width);
+  margin-inline: auto;
+}
+
+@media (width >= 768px) {
+  .page-grid {
+    --page-grid-width: calc(100vw - 64px);
+    --grid-gutter: 24px;
+
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+}
+
+@media (width >= 1024px) {
+  .page-grid {
+    --page-grid-width: min(87.6389vw, 1262px);
+    --grid-gutter: min(4.4444vw, 64px);
+
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    width: var(--page-grid-width);
+  }
+}
+
 .font-heading {
   font-family: var(--font-heading);
 }
@@ -53,22 +91,4 @@ button {
 img {
   display: block;
   max-width: 100%;
-}
-
-/*
-  Główna siatka całej strony
-*/
-.page-grid {
-  display: grid;
-  grid-template-columns:
-    minmax(var(--page-gutter), 1fr)
-    minmax(0, calc(var(--page-max-width) / 2))
-    minmax(0, calc(var(--page-max-width) / 2))
-    minmax(var(--page-gutter), 1fr);
-}
-
-@media (width < 640px) {
-  :root {
-    --page-gutter: 16px;
-  }
 }
