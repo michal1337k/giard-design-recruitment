@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 
 const props = defineProps({
   isOpen: {
@@ -20,44 +20,239 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'previous', 'next'])
 
+const MIN_SCALE = 1
+const MAX_SCALE = 3
+const SCALE_STEP = 0.5
+
+const imageViewport = ref(null)
+const imageElement = ref(null)
+
+const scale = ref(MIN_SCALE)
+const offsetX = ref(0)
+const offsetY = ref(0)
+const isDragging = ref(false)
+
+let activePointerId = null
+let dragStartX = 0
+let dragStartY = 0
+let previousBodyOverflow = ''
+
+const zoomPercentage = computed(() => {
+  return `${Math.round(scale.value * 100)}%`
+})
+
+const canZoomIn = computed(() => {
+  return scale.value < MAX_SCALE
+})
+
+const canZoomOut = computed(() => {
+  return scale.value > MIN_SCALE
+})
+
+function clamp(value, minimum, maximum) {
+  return Math.min(Math.max(value, minimum), maximum)
+}
+
+/*
+ * Ogranicza przesunięcie zdjęcia do jego powiększonych krawędzi.
+ * Dzięki temu obrazu nie da się całkowicie wyciągnąć poza viewport.
+ */
+function clampPan() {
+  if (!imageViewport.value || !imageElement.value) {
+    return
+  }
+
+  if (scale.value <= MIN_SCALE) {
+    offsetX.value = 0
+    offsetY.value = 0
+    return
+  }
+
+  const viewportWidth = imageViewport.value.clientWidth
+  const viewportHeight = imageViewport.value.clientHeight
+
+  /*
+   * clientWidth i clientHeight nie uwzględniają transform: scale(),
+   * dlatego mnożymy bazowy rozmiar przez aktualny zoom.
+   */
+  const scaledImageWidth = imageElement.value.clientWidth * scale.value
+  const scaledImageHeight = imageElement.value.clientHeight * scale.value
+
+  const maximumOffsetX = Math.max((scaledImageWidth - viewportWidth) / 2, 0)
+  const maximumOffsetY = Math.max((scaledImageHeight - viewportHeight) / 2, 0)
+
+  offsetX.value = clamp(offsetX.value, -maximumOffsetX, maximumOffsetX)
+  offsetY.value = clamp(offsetY.value, -maximumOffsetY, maximumOffsetY)
+}
+
+async function setScale(nextScale) {
+  scale.value = clamp(nextScale, MIN_SCALE, MAX_SCALE)
+
+  if (scale.value === MIN_SCALE) {
+    offsetX.value = 0
+    offsetY.value = 0
+  }
+
+  /*
+   * Czekamy, aż Vue naniesie nową skalę,
+   * zanim ponownie ograniczymy pozycję zdjęcia.
+   */
+  await nextTick()
+  clampPan()
+}
+
+function zoomIn() {
+  setScale(scale.value + SCALE_STEP)
+}
+
+function zoomOut() {
+  setScale(scale.value - SCALE_STEP)
+}
+
+function resetZoom() {
+  isDragging.value = false
+  activePointerId = null
+
+  scale.value = MIN_SCALE
+  offsetX.value = 0
+  offsetY.value = 0
+}
+
+function toggleZoom() {
+  if (scale.value === MIN_SCALE) {
+    setScale(2)
+    return
+  }
+
+  resetZoom()
+}
+
+function showPreviousProject() {
+  resetZoom()
+  emit('previous')
+}
+
+function showNextProject() {
+  resetZoom()
+  emit('next')
+}
+
+function handlePointerDown(event) {
+  if (scale.value <= MIN_SCALE) {
+    return
+  }
+
+  isDragging.value = true
+  activePointerId = event.pointerId
+
+  dragStartX = event.clientX - offsetX.value
+  dragStartY = event.clientY - offsetY.value
+
+  event.currentTarget.setPointerCapture(event.pointerId)
+}
+
+function handlePointerMove(event) {
+  if (!isDragging.value || event.pointerId !== activePointerId) {
+    return
+  }
+
+  offsetX.value = event.clientX - dragStartX
+  offsetY.value = event.clientY - dragStartY
+
+  clampPan()
+}
+
+function finishDragging(event) {
+  if (event.pointerId !== activePointerId) {
+    return
+  }
+
+  if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+    event.currentTarget.releasePointerCapture(event.pointerId)
+  }
+
+  isDragging.value = false
+  activePointerId = null
+}
+
 function handleKeydown(event) {
-  /* nie obsługuj klawiszy, gdy popup jest zamknięty */
   if (!props.isOpen) {
     return
   }
 
   if (event.key === 'Escape') {
     emit('close')
+    return
   }
 
   if (event.key === 'ArrowLeft') {
-    emit('previous')
+    showPreviousProject()
+    return
   }
 
   if (event.key === 'ArrowRight') {
-    emit('next')
+    showNextProject()
+    return
+  }
+
+  if (event.key === '+' || event.key === '=') {
+    event.preventDefault()
+    zoomIn()
+    return
+  }
+
+  if (event.key === '-') {
+    event.preventDefault()
+    zoomOut()
+    return
+  }
+
+  if (event.key === '0') {
+    event.preventDefault()
+    resetZoom()
   }
 }
 
-/* blokuj przewijanie strony  pod popupem */
+function handleResize() {
+  clampPan()
+}
+
+/* Blokada przewijania strony znajdującej się pod popupem. */
 watch(
   () => props.isOpen,
   (isOpen) => {
-    document.body.style.overflow = isOpen ? 'hidden' : ''
+    if (isOpen) {
+      previousBodyOverflow = document.body.style.overflow
+      document.body.style.overflow = 'hidden'
+      resetZoom()
+      return
+    }
+
+    document.body.style.overflow = previousBodyOverflow
   },
   {
     immediate: true,
   },
 )
 
+/* Każde nowe zdjęcie rozpoczyna się od zoomu 100%. */
+watch(
+  () => props.project?.image,
+  () => {
+    resetZoom()
+  },
+)
+
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
+  window.addEventListener('resize', handleResize)
 })
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
+  window.removeEventListener('resize', handleResize)
 
-  document.body.style.overflow = ''
+  document.body.style.overflow = previousBodyOverflow
 })
 </script>
 
@@ -72,10 +267,72 @@ onUnmounted(() => {
         :aria-label="`Podgląd realizacji: ${project.title}`"
         @click.self="emit('close')"
       >
-        <!-- zamknięcie popupu -->
+        <!-- Sterowanie zoomem -->
+        <div
+          class="absolute top-4 left-4 z-30 flex items-center gap-1 rounded-full bg-black/55 p-1 text-white backdrop-blur-md md:top-8 md:left-8"
+          role="group"
+          aria-label="Sterowanie powiększeniem zdjęcia"
+        >
+          <button
+            type="button"
+            class="flex size-10 items-center justify-center rounded-full transition-colors hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-white"
+            :disabled="!canZoomOut"
+            aria-label="Pomniejsz zdjęcie"
+            @click="zoomOut"
+          >
+            <svg
+              class="size-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d="M5 12h14" />
+            </svg>
+          </button>
+
+          <output class="min-w-[54px] text-center text-sm tabular-nums" aria-live="polite">
+            {{ zoomPercentage }}
+          </output>
+
+          <button
+            type="button"
+            class="flex size-10 items-center justify-center rounded-full transition-colors hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-white"
+            :disabled="!canZoomIn"
+            aria-label="Powiększ zdjęcie"
+            @click="zoomIn"
+          >
+            <svg
+              class="size-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d="M12 5v14" />
+              <path d="M5 12h14" />
+            </svg>
+          </button>
+
+          <button
+            type="button"
+            class="flex h-10 min-w-10 items-center justify-center rounded-full px-2 text-xs font-medium transition-colors hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-white"
+            :disabled="scale === MIN_SCALE"
+            aria-label="Przywróć oryginalny rozmiar zdjęcia"
+            @click="resetZoom"
+          >
+            1:1
+          </button>
+        </div>
+
+        <!-- Zamknięcie popupu -->
         <button
           type="button"
-          class="absolute top-4 right-4 z-20 flex size-12 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white hover:text-black active:scale-95 md:top-8 md:right-8"
+          class="absolute top-4 right-4 z-30 flex size-12 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white hover:text-black active:scale-95 md:top-8 md:right-8"
           aria-label="Zamknij galerię"
           @click="emit('close')"
         >
@@ -93,13 +350,13 @@ onUnmounted(() => {
           </svg>
         </button>
 
-        <!-- poprzednie zdjęcie -->
+        <!-- Poprzednie zdjęcie -->
         <button
           v-if="showNavigation"
           type="button"
           class="absolute top-1/2 left-2 z-20 flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white hover:text-black active:scale-95 md:left-8 md:size-14"
           aria-label="Poprzednie zdjęcie"
-          @click="emit('previous')"
+          @click="showPreviousProject"
         >
           <svg
             class="size-6"
@@ -115,13 +372,13 @@ onUnmounted(() => {
           </svg>
         </button>
 
-        <!-- następne zdjęcie -->
+        <!-- Następne zdjęcie -->
         <button
           v-if="showNavigation"
           type="button"
           class="absolute top-1/2 right-2 z-20 flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white hover:text-black active:scale-95 md:right-8 md:size-14"
           aria-label="Następne zdjęcie"
-          @click="emit('next')"
+          @click="showNextProject"
         >
           <svg
             class="size-6"
@@ -137,23 +394,74 @@ onUnmounted(() => {
           </svg>
         </button>
 
-        <!-- główna zawartość popupu -->
-        <figure class="flex max-h-full max-w-full flex-col items-center">
-          <img
-            :src="project.image"
-            :alt="project.alt"
-            class="max-h-[78vh] max-w-full object-contain"
-          />
+        <!-- Główna zawartość popupu -->
+        <!--
+  Pełnoekranowa przestrzeń robocza zdjęcia.
+  Nie ma osobnego, ograniczonego okna zoomu.
+-->
+        <figure class="absolute inset-0">
+          <div
+            ref="imageViewport"
+            class="absolute inset-0 flex touch-none items-center justify-center overflow-hidden"
+            :class="
+              scale > MIN_SCALE
+                ? isDragging
+                  ? 'cursor-grabbing'
+                  : 'cursor-grab'
+                : 'cursor-zoom-in'
+            "
+            @dblclick.prevent="toggleZoom"
+            @pointerdown="handlePointerDown"
+            @pointermove="handlePointerMove"
+            @pointerup="finishDragging"
+            @pointercancel="finishDragging"
+          >
+            <!--
+      Ten element odpowiada za przesuwanie zdjęcia.
+      Sam obraz odpowiada za skalowanie.
+    -->
+            <div
+              class="flex items-center justify-center"
+              :class="{
+                'transition-transform duration-200 ease-out': !isDragging,
+              }"
+              :style="{
+                transform: `translate3d(${offsetX}px, ${offsetY}px, 0)`,
+              }"
+            >
+              <img
+                ref="imageElement"
+                :src="project.image"
+                :alt="project.alt"
+                draggable="false"
+                class="block max-h-[calc(100dvh-6rem)] max-w-[calc(100vw-2rem)] object-contain select-none transition-transform duration-200 ease-out md:max-h-[calc(100dvh-8rem)] md:max-w-[calc(100vw-8rem)]"
+                :style="{
+                  transform: `scale(${scale})`,
+                  transformOrigin: 'center',
+                }"
+                @load="clampPan"
+              />
+            </div>
+          </div>
 
-          <figcaption class="mt-4 text-center text-white">
-            <p class="text-sm text-white/60">
-              {{ project.category }}
-            </p>
+          <!--
+    Podpis jest widoczny tylko przy podstawowym powiększeniu.
+    Podczas zoomu nie zasłania zdjęcia.
+  -->
+          <Transition name="caption">
+            <figcaption
+              v-if="scale === MIN_SCALE"
+              class="pointer-events-none absolute right-20 bottom-5 left-20 z-10 text-center text-white md:bottom-8"
+            >
+              <p class="text-sm text-white/60">
+                {{ project.category }}
+              </p>
 
-            <p class="mt-1 text-lg font-medium">
-              {{ project.title }}
-            </p>
-          </figcaption>
+              <p class="mt-1 text-lg font-medium">
+                {{ project.title }}
+              </p>
+            </figcaption>
+          </Transition>
         </figure>
       </div>
     </Transition>
@@ -171,7 +479,6 @@ onUnmounted(() => {
   opacity: 0;
 }
 
-/* lekka animacja zdjęcia */
 .lightbox-enter-active figure,
 .lightbox-leave-active figure {
   transition:
@@ -183,5 +490,24 @@ onUnmounted(() => {
 .lightbox-leave-to figure {
   opacity: 0;
   transform: scale(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lightbox-enter-active,
+  .lightbox-leave-active,
+  .lightbox-enter-active figure,
+  .lightbox-leave-active figure {
+    transition-duration: 1ms;
+  }
+}
+
+.caption-enter-active,
+.caption-leave-active {
+  transition: opacity 180ms ease;
+}
+
+.caption-enter-from,
+.caption-leave-to {
+  opacity: 0;
 }
 </style>

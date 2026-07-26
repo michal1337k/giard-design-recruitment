@@ -1,5 +1,5 @@
 <script setup>
-import aboutImage from '@/assets/images/about/about-giard.png'
+import aboutImage from '@/assets/images/about/about-giard.webp'
 import { aboutSection } from '@/data/aboutSection'
 </script>
 

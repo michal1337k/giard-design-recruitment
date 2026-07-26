@@ -1,12 +1,12 @@
-import project01 from '@/assets/images/projects/project-01.png'
-import project02 from '@/assets/images/projects/project-02.png'
-import project03 from '@/assets/images/projects/project-03.png'
-import project04 from '@/assets/images/projects/project-04.png'
-import project05 from '@/assets/images/projects/project-05.png'
-import project06 from '@/assets/images/projects/project-06.png'
-import project07 from '@/assets/images/projects/project-07.png'
-import project08 from '@/assets/images/projects/project-08.png'
-import project09 from '@/assets/images/projects/project-09.png'
+import project01 from '@/assets/images/projects/project-01.webp'
+import project02 from '@/assets/images/projects/project-02.webp'
+import project03 from '@/assets/images/projects/project-03.webp'
+import project04 from '@/assets/images/projects/project-04.webp'
+import project05 from '@/assets/images/projects/project-05.webp'
+import project06 from '@/assets/images/projects/project-06.webp'
+import project07 from '@/assets/images/projects/project-07.webp'
+import project08 from '@/assets/images/projects/project-08.webp'
+import project09 from '@/assets/images/projects/project-09.webp'
 
 export const projects = [
   {

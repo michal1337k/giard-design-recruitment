@@ -1,6 +1,6 @@
-import hero01 from '@/assets/images/hero/hero-01.png'
-import hero02 from '@/assets/images/hero/hero-02.png'
-import hero03 from '@/assets/images/hero/hero-03.png'
+import hero01 from '@/assets/images/hero/hero-01.webp'
+import hero02 from '@/assets/images/hero/hero-02.webp'
+import hero03 from '@/assets/images/hero/hero-03.webp'
 
 export const heroSlides = [
   {
