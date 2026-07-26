@@ -1,7 +1,7 @@
 import js from '@eslint/js'
+import eslintConfigPrettier from 'eslint-config-prettier/flat'
 import pluginVue from 'eslint-plugin-vue'
 import globals from 'globals'
-import eslintConfigPrettier from 'eslint-config-prettier/flat'
 
 export default [
   {
@@ -12,7 +12,7 @@ export default [
   ...pluginVue.configs['flat/recommended'],
 
   {
-    files: ['**/*.{js,mjs,cjs,vue}'],
+    files: ['src/**/*.{js,vue}'],
 
     languageOptions: {
       ecmaVersion: 'latest',
@@ -20,12 +20,24 @@ export default [
 
       globals: {
         ...globals.browser,
-        ...globals.node,
       },
     },
 
     rules: {
       'vue/multi-word-component-names': 'off',
+    },
+  },
+
+  {
+    files: ['eslint.config.js', 'vite.config.js'],
+
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+
+      globals: {
+        ...globals.node,
+      },
     },
   },
 
