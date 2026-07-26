@@ -15,7 +15,7 @@ import { offerDescriptionLines } from '@/data/offerDescription'
         - zaczyna się na kolumnie 2,
         - kończy wraz z kolumną 11,
       -->
-      <div class="col-span-full flex flex-col gap-[16px] lg:col-start-2 lg:col-end-12">
+      <div v-reveal class="col-span-full flex flex-col gap-[16px] lg:col-start-2 lg:col-end-12">
         <!-- Navi small -->
         <p
           class="h-[18px] w-fit text-[12px] leading-[18px] font-normal tracking-[-0.01em] text-[var(--color-green)]"
@@ -57,7 +57,14 @@ import { offerDescriptionLines } from '@/data/offerDescription'
       <div
         class="col-span-full mt-16 grid grid-cols-1 gap-6 md:grid-cols-2 lg:mt-[96px] lg:grid-cols-12 lg:gap-x-[var(--grid-gutter)] lg:gap-y-0"
       >
-        <OfferCard v-for="item in offerItems" :key="item.id" :item="item" class="lg:col-span-4" />
+        <div
+          v-for="(item, index) in offerItems"
+          :key="item.id"
+          v-reveal="{ delay: index * 90 }"
+          class="lg:col-span-4"
+        >
+          <OfferCard :item="item" class="h-full" />
+        </div>
       </div>
     </div>
   </section>

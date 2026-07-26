@@ -37,6 +37,7 @@ import { aboutSection } from '@/data/aboutSection'
       >
         <!-- Kontener z Figmy -->
         <div
+          v-reveal="{ distance: 20 }"
           class="flex w-full flex-col gap-12 lg:h-[450px] lg:max-w-[596px] lg:gap-[72px] lg:pl-[96px]"
         >
           <!-- Text -->

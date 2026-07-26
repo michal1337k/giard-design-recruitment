@@ -103,7 +103,7 @@ onUnmounted(() => {
     id="projects"
     class="bg-[var(--color-beige)] pt-20 pb-12 md:pt-24 lg:pt-[120px] lg:pb-[41px]"
   >
-    <div class="flex flex-col gap-[16px] px-[var(--page-gutter)] lg:px-0 lg:pl-[160px]">
+    <div v-reveal class="flex flex-col gap-[16px] px-[var(--page-gutter)] lg:px-0 lg:pl-[160px]">
       <p
         class="w-fit text-[12px] leading-[18px] font-normal tracking-[-0.01em] text-[var(--color-green)]"
       >
