@@ -12,7 +12,7 @@ import { aboutSection } from '@/data/aboutSection'
       >
         <img
           :src="aboutImage"
-          alt="Nowoczesna aranżacja ogrodu przy domu"
+          :alt="aboutSection.imageAlt"
           class="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-1200 ease-out group-hover:scale-[1.03]"
           loading="lazy"
           decoding="async"

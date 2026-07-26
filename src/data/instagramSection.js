@@ -18,7 +18,7 @@ export const instagramSection = {
     ],
   ],
 
-  descriptionLines: ['Śledź nasze ', 'najnowsze realizacje!'],
+  descriptionLines: ['Śledź nasze', 'najnowsze realizacje!'],
 
   buttonLabel: 'Instagram',
   buttonHref: 'https://www.instagram.com/',

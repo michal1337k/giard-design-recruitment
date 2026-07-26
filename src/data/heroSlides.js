@@ -67,7 +67,7 @@ export const heroSlides = [
     descriptionLines: [
       'Prowadzimy inwestycję od projektu i wizualizacji',
       'aż po wykonanie ogrodu. Każdy etap realizujemy',
-      'z dbałością o najmniejszy detal',
+      'z dbałością o najmniejszy detal.',
     ],
 
     image: hero03,

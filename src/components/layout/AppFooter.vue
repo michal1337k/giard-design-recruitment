@@ -1,6 +1,6 @@
 <script setup>
 import adRespectLogo from '@/assets/icons/footer/adrespect-logo.svg'
-import footerLogo from '@/assets/icons/footer/giarddesign.svg'
+import footerLogo from '@/assets/icons/footer/giarddesign-footer-logo.svg'
 
 import { footerData } from '@/data/footerData'
 </script>

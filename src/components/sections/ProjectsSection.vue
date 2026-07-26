@@ -128,7 +128,7 @@ onUnmounted(() => {
         >
           <img
             :src="project.image"
-            :alt="project.alt"
+            :alt="project.imageAlt"
             class="h-auto w-full transition-transform duration-700 ease-out group-hover:scale-[1.04] group-active:scale-[0.99]"
             loading="lazy"
             decoding="async"

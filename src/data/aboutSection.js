@@ -25,4 +25,5 @@ export const aboutSection = {
 
   buttonLabel: 'Poznaj nas bliżej',
   buttonHref: '#contact',
+  imageAlt: 'Nowoczesna aranżacja ogrodu przy domu',
 }

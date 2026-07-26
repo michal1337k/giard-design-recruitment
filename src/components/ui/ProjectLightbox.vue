@@ -461,7 +461,7 @@ onUnmounted(() => {
               <img
                 ref="imageElement"
                 :src="project.image"
-                :alt="project.alt"
+                :alt="project.imageAlt"
                 draggable="false"
                 class="block max-h-[calc(100dvh-6rem)] max-w-[calc(100vw-2rem)] origin-center object-contain select-none transition-transform duration-200 ease-out md:max-h-[calc(100dvh-8rem)] md:max-w-[calc(100vw-8rem)]"
                 :style="imageTransform"

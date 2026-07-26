@@ -45,10 +45,6 @@ defineProps({
               </span>
             </span>
           </template>
-
-          <template v-else>
-            {{ item.description }}
-          </template>
         </p>
       </div>
     </div>
