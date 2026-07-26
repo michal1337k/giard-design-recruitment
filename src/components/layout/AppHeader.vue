@@ -4,21 +4,35 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import logo from '@/assets/brand/giarddesign-logo.svg'
 import { navigationLinks, offerLinks, searchableLinks } from '@/data/headerData'
 
+const FOCUSABLE_ELEMENTS_SELECTOR = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])',
+].join(',')
+
 const isDesktopOfferOpen = ref(false)
 const isMobileMenuOpen = ref(false)
 const isMobileOfferOpen = ref(false)
 const isSearchOpen = ref(false)
 
 const searchQuery = ref('')
+
+const desktopOfferButton = ref(null)
+const mobileMenuButton = ref(null)
+const mobileNavigation = ref(null)
+const searchDialog = ref(null)
 const searchInput = ref(null)
 
+let mobileMenuTrigger = null
+let searchTrigger = null
 let previousBodyOverflow = ''
 
-const isPageScrollLocked = computed(() => isMobileMenuOpen.value || isSearchOpen.value)
-
-function normalizeSearchValue(value) {
-  return value.toLocaleLowerCase('pl-PL')
-}
+const isPageScrollLocked = computed(() => {
+  return isMobileMenuOpen.value || isSearchOpen.value
+})
 
 const filteredSearchResults = computed(() => {
   const query = normalizeSearchValue(searchQuery.value.trim())
@@ -34,18 +48,114 @@ const filteredSearchResults = computed(() => {
   })
 })
 
-function closeDesktopOffer() {
-  isDesktopOfferOpen.value = false
+function normalizeSearchValue(value) {
+  return value.toLocaleLowerCase('pl-PL')
 }
 
-function closeMobileMenu() {
+function getActiveElement() {
+  return document.activeElement instanceof HTMLElement ? document.activeElement : null
+}
+
+function getFocusableElements(container) {
+  if (!container) {
+    return []
+  }
+
+  return [...container.querySelectorAll(FOCUSABLE_ELEMENTS_SELECTOR)].filter((element) => {
+    return (
+      element instanceof HTMLElement &&
+      element.getAttribute('aria-hidden') !== 'true' &&
+      element.getClientRects().length > 0
+    )
+  })
+}
+
+function focusFirstElement(container) {
+  getFocusableElements(container)[0]?.focus()
+}
+
+function restoreFocus(element) {
+  nextTick(() => {
+    if (element?.isConnected) {
+      element.focus()
+    }
+  })
+}
+
+function trapFocus(event, container) {
+  if (event.key !== 'Tab') {
+    return
+  }
+
+  const focusableElements = getFocusableElements(container)
+
+  if (focusableElements.length === 0) {
+    event.preventDefault()
+    return
+  }
+
+  const firstElement = focusableElements[0]
+  const lastElement = focusableElements.at(-1)
+  const activeElement = document.activeElement
+
+  if (!container.contains(activeElement)) {
+    event.preventDefault()
+
+    if (event.shiftKey) {
+      lastElement.focus()
+      return
+    }
+
+    firstElement.focus()
+    return
+  }
+
+  if (event.shiftKey && activeElement === firstElement) {
+    event.preventDefault()
+    lastElement.focus()
+    return
+  }
+
+  if (!event.shiftKey && activeElement === lastElement) {
+    event.preventDefault()
+    firstElement.focus()
+  }
+}
+
+function closeDesktopOffer({ shouldRestoreFocus = false } = {}) {
+  const wasOpen = isDesktopOfferOpen.value
+
+  isDesktopOfferOpen.value = false
+
+  if (wasOpen && shouldRestoreFocus) {
+    restoreFocus(desktopOfferButton.value)
+  }
+}
+
+function closeMobileMenu({ shouldRestoreFocus = false } = {}) {
+  const wasOpen = isMobileMenuOpen.value
+  const trigger = mobileMenuTrigger
+
   isMobileMenuOpen.value = false
   isMobileOfferOpen.value = false
+  mobileMenuTrigger = null
+
+  if (wasOpen && shouldRestoreFocus) {
+    restoreFocus(trigger)
+  }
 }
 
-function closeSearch() {
+function closeSearch({ shouldRestoreFocus = false } = {}) {
+  const wasOpen = isSearchOpen.value
+  const trigger = searchTrigger
+
   isSearchOpen.value = false
   searchQuery.value = ''
+  searchTrigger = null
+
+  if (wasOpen && shouldRestoreFocus) {
+    restoreFocus(trigger)
+  }
 }
 
 function closeAllPanels() {
@@ -55,17 +165,37 @@ function closeAllPanels() {
 }
 
 function toggleDesktopOffer() {
-  const shouldOpen = !isDesktopOfferOpen.value
+  if (isDesktopOfferOpen.value) {
+    closeDesktopOffer({
+      shouldRestoreFocus: true,
+    })
+
+    return
+  }
 
   closeAllPanels()
-  isDesktopOfferOpen.value = shouldOpen
+  isDesktopOfferOpen.value = true
 }
 
-function toggleMobileMenu() {
-  const shouldOpen = !isMobileMenuOpen.value
+async function toggleMobileMenu() {
+  if (isMobileMenuOpen.value) {
+    closeMobileMenu({
+      shouldRestoreFocus: true,
+    })
 
-  closeAllPanels()
-  isMobileMenuOpen.value = shouldOpen
+    return
+  }
+
+  mobileMenuTrigger = getActiveElement()
+
+  closeDesktopOffer()
+  closeSearch()
+
+  isMobileMenuOpen.value = true
+
+  // poczekaj, aż vue wyrenderuje menu, a następnie ustaw fokus na pierwszym elemencie
+  await nextTick()
+  focusFirstElement(mobileNavigation.value)
 }
 
 function toggleMobileOffer() {
@@ -73,7 +203,11 @@ function toggleMobileOffer() {
 }
 
 async function openSearch() {
-  closeAllPanels()
+  searchTrigger = isMobileMenuOpen.value ? mobileMenuButton.value : getActiveElement()
+
+  closeDesktopOffer()
+  closeMobileMenu()
+
   isSearchOpen.value = true
 
   // poczekaj, aż vue wyrenderuje wyszukiwarkę, a następnie ustaw fokus
@@ -83,7 +217,10 @@ async function openSearch() {
 
 function toggleSearch() {
   if (isSearchOpen.value) {
-    closeSearch()
+    closeSearch({
+      shouldRestoreFocus: true,
+    })
+
     return
   }
 
@@ -94,9 +231,45 @@ function handleNavigationClick() {
   closeAllPanels()
 }
 
+function handleMobileNavigationKeydown(event) {
+  trapFocus(event, mobileNavigation.value)
+}
+
+function handleSearchKeydown(event) {
+  trapFocus(event, searchDialog.value)
+}
+
 function handleKeydown(event) {
-  if (event.key === 'Escape') {
-    closeAllPanels()
+  if (event.key !== 'Escape') {
+    return
+  }
+
+  if (isSearchOpen.value) {
+    event.preventDefault()
+
+    closeSearch({
+      shouldRestoreFocus: true,
+    })
+
+    return
+  }
+
+  if (isMobileMenuOpen.value) {
+    event.preventDefault()
+
+    closeMobileMenu({
+      shouldRestoreFocus: true,
+    })
+
+    return
+  }
+
+  if (isDesktopOfferOpen.value) {
+    event.preventDefault()
+
+    closeDesktopOffer({
+      shouldRestoreFocus: true,
+    })
   }
 }
 
@@ -142,6 +315,7 @@ onUnmounted(() => {
         >
           <div class="relative flex h-5.25 w-14.75 shrink-0 items-center">
             <button
+              ref="desktopOfferButton"
               type="button"
               class="flex h-5.25 w-14.75 items-center gap-1.25 whitespace-nowrap transition-opacity hover:opacity-60"
               aria-controls="desktop-offer-menu"
@@ -225,6 +399,7 @@ onUnmounted(() => {
 
         <!-- wyświetl przycisk menu mobilnego -->
         <button
+          ref="mobileMenuButton"
           type="button"
           class="relative size-10 lg:hidden"
           aria-controls="mobile-navigation"
@@ -256,7 +431,11 @@ onUnmounted(() => {
     v-if="isDesktopOfferOpen"
     class="fixed inset-0 z-40 hidden lg:block"
     aria-hidden="true"
-    @click="closeDesktopOffer"
+    @click="
+      closeDesktopOffer({
+        shouldRestoreFocus: true,
+      })
+    "
   ></div>
 
   <!-- przyciemnij tło pod menu mobilnym -->
@@ -266,7 +445,11 @@ onUnmounted(() => {
       type="button"
       class="fixed inset-0 top-18 z-30 bg-black/30 lg:hidden"
       aria-label="Zamknij menu"
-      @click="closeMobileMenu"
+      @click="
+        closeMobileMenu({
+          shouldRestoreFocus: true,
+        })
+      "
     ></button>
   </Transition>
 
@@ -275,7 +458,12 @@ onUnmounted(() => {
     <div
       v-if="isMobileMenuOpen"
       id="mobile-navigation"
+      ref="mobileNavigation"
       class="fixed inset-x-0 top-18 z-40 max-h-[calc(100dvh-72px)] overflow-y-auto border-t border-stone-200 bg-white lg:hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Menu główne"
+      @keydown="handleMobileNavigationKeydown"
     >
       <nav class="px-6 py-6" aria-label="Nawigacja mobilna">
         <button
@@ -361,15 +549,21 @@ onUnmounted(() => {
         type="button"
         class="absolute inset-0 bg-black/35"
         aria-label="Zamknij wyszukiwarkę"
-        @click="closeSearch"
+        @click="
+          closeSearch({
+            shouldRestoreFocus: true,
+          })
+        "
       ></button>
 
       <section
         id="page-search-dialog"
+        ref="searchDialog"
         class="search-sheet relative w-full bg-white shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-label="Wyszukiwarka"
+        @keydown="handleSearchKeydown"
       >
         <div class="page-grid">
           <!-- zajmij całą szerokość globalnej siatki -->
@@ -383,7 +577,11 @@ onUnmounted(() => {
                 type="button"
                 class="flex size-10 items-center justify-center rounded-full transition-colors hover:bg-stone-100"
                 aria-label="Zamknij wyszukiwarkę"
-                @click="closeSearch"
+                @click="
+                  closeSearch({
+                    shouldRestoreFocus: true,
+                  })
+                "
               >
                 <svg
                   class="size-5"

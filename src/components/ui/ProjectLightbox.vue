@@ -24,8 +24,19 @@ const MIN_SCALE = 1
 const MAX_SCALE = 3
 const SCALE_STEP = 0.5
 
+const FOCUSABLE_ELEMENTS_SELECTOR = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])',
+].join(',')
+
 const imageViewport = ref(null)
 const imageElement = ref(null)
+const lightboxDialog = ref(null)
+const closeButton = ref(null)
 
 const scale = ref(MIN_SCALE)
 const offsetX = ref(0)
@@ -37,6 +48,7 @@ let dragStartX = 0
 let dragStartY = 0
 let previousBodyOverflow = ''
 let isBodyScrollLocked = false
+let lightboxTrigger = null
 
 const isZoomed = computed(() => {
   return scale.value > MIN_SCALE
@@ -223,13 +235,78 @@ function unlockBodyScroll() {
   isBodyScrollLocked = false
 }
 
+function getFocusableElements(container) {
+  if (!container) {
+    return []
+  }
+
+  return [...container.querySelectorAll(FOCUSABLE_ELEMENTS_SELECTOR)].filter((element) => {
+    return element instanceof HTMLElement && element.getClientRects().length > 0
+  })
+}
+
+function trapFocus(event) {
+  if (event.key !== 'Tab' || !lightboxDialog.value) {
+    return
+  }
+
+  const focusableElements = getFocusableElements(lightboxDialog.value)
+
+  if (focusableElements.length === 0) {
+    event.preventDefault()
+    lightboxDialog.value.focus()
+    return
+  }
+
+  const firstElement = focusableElements[0]
+  const lastElement = focusableElements.at(-1)
+  const activeElement = document.activeElement
+
+  if (!lightboxDialog.value.contains(activeElement)) {
+    event.preventDefault()
+
+    if (event.shiftKey) {
+      lastElement.focus()
+      return
+    }
+
+    firstElement.focus()
+    return
+  }
+
+  if (event.shiftKey && activeElement === firstElement) {
+    event.preventDefault()
+    lastElement.focus()
+    return
+  }
+
+  if (!event.shiftKey && activeElement === lastElement) {
+    event.preventDefault()
+    firstElement.focus()
+  }
+}
+
+function isTextInput(element) {
+  if (!(element instanceof HTMLElement)) {
+    return false
+  }
+
+  return ['INPUT', 'TEXTAREA', 'SELECT'].includes(element.tagName) || element.isContentEditable
+}
+
 function handleKeydown(event) {
   if (!props.isOpen) {
     return
   }
 
   if (event.key === 'Escape') {
+    event.preventDefault()
     emit('close')
+    return
+  }
+
+  // nie uruchamiaj skrótów galerii podczas wpisywania tekstu
+  if (isTextInput(event.target)) {
     return
   }
 
@@ -269,14 +346,36 @@ function handleResize() {
 
 watch(
   () => props.isOpen,
-  (isOpen) => {
+  async (isOpen, wasOpen) => {
     if (isOpen) {
+      lightboxTrigger =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null
+
       lockBodyScroll()
       resetZoom()
+
+      // poczekaj, aż vue wyrenderuje lightbox, a następnie ustaw fokus na zamknięciu
+      await nextTick()
+      closeButton.value?.focus()
+
+      return
+    }
+
+    if (!wasOpen) {
       return
     }
 
     unlockBodyScroll()
+
+    const trigger = lightboxTrigger
+    lightboxTrigger = null
+
+    // poczekaj, aż vue usunie lightbox, a następnie przywróć poprzedni fokus
+    await nextTick()
+
+    if (trigger?.isConnected) {
+      trigger.focus()
+    }
   },
   {
     immediate: true,
@@ -308,10 +407,12 @@ onUnmounted(() => {
     <Transition name="lightbox">
       <div
         v-if="isOpen && project"
+        ref="lightboxDialog"
         class="fixed inset-0 z-200 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm md:p-10"
         role="dialog"
         aria-modal="true"
         :aria-label="`Podgląd realizacji: ${project.title}`"
+        @keydown="trapFocus"
       >
         <!-- wyświetl sterowanie zoomem -->
         <div
@@ -376,6 +477,7 @@ onUnmounted(() => {
         </div>
 
         <button
+          ref="closeButton"
           type="button"
           class="absolute top-4 right-4 z-30 flex size-12 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white hover:text-black active:scale-95 md:top-8 md:right-8"
           aria-label="Zamknij galerię"
@@ -534,5 +636,11 @@ onUnmounted(() => {
   .caption-leave-active {
     transition-duration: 1ms;
   }
+}
+
+/* pokaż fokus podczas obsługi lightboxa klawiaturą */
+.lightbox-control:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 3px;
 }
 </style>
