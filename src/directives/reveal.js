@@ -1,7 +1,15 @@
-const observers = new WeakMap()
+const observerByElement = new WeakMap()
 
 function getNumberOption(value, fallback) {
   return Number.isFinite(value) ? value : fallback
+}
+
+function shouldRevealImmediately() {
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  const supportsIntersectionObserver = 'IntersectionObserver' in window
+
+  return prefersReducedMotion || !supportsIntersectionObserver
 }
 
 export const reveal = {
@@ -18,14 +26,14 @@ export const reveal = {
 
     element.classList.add('scroll-reveal')
 
-    /* element pozostaje od razu widoczny, gdy użytkownik ograniczył animacje w ustawieniach systemowych */
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    // pokaż element od razu, gdy użytkownik ograniczył ruch lub przeglądarka nie obsługuje obserwatora
+    if (shouldRevealImmediately()) {
       element.classList.add('is-revealed')
     }
   },
 
   mounted(element, binding) {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (element.classList.contains('is-revealed')) {
       return
     }
 
@@ -42,9 +50,9 @@ export const reveal = {
 
         element.classList.add('is-revealed')
 
-        /* Animacja wykonuje się tylko raz, po jej uruchomieniu obserwator nie jest już potrzebny */
-        observer.unobserve(element)
-        observers.delete(element)
+        // uruchom animację tylko raz i zakończ obserwację elementu
+        observer.disconnect()
+        observerByElement.delete(element)
       },
       {
         threshold,
@@ -52,12 +60,12 @@ export const reveal = {
       },
     )
 
-    observers.set(element, observer)
+    observerByElement.set(element, observer)
     observer.observe(element)
   },
 
   unmounted(element) {
-    observers.get(element)?.disconnect()
-    observers.delete(element)
+    observerByElement.get(element)?.disconnect()
+    observerByElement.delete(element)
   },
 }

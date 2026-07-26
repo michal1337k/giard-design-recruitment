@@ -1,61 +1,50 @@
 <script setup>
 import OfferCard from '@/components/ui/OfferCard.vue'
-import { offerItems } from '@/data/offerItems'
+
 import { offerDescriptionLines } from '@/data/offerDescription'
+import { offerItems } from '@/data/offerItems'
 </script>
 
 <template>
   <section
     id="offer"
-    class="bg-[var(--color-cream)] px-[var(--page-gutter)] py-20 md:py-24 lg:px-0 lg:pt-[120px] lg:pb-[160px]"
+    class="bg-(--color-cream) px-(--page-gutter) py-20 md:py-24 lg:px-0 lg:pt-30 lg:pb-40"
   >
     <div class="page-grid">
-      <!--
-        Frame 2308:
-        - zaczyna się na kolumnie 2,
-        - kończy wraz z kolumną 11,
-      -->
-      <div v-reveal class="col-span-full flex flex-col gap-[16px] lg:col-start-2 lg:col-end-12">
-        <!-- Navi small -->
+      <!-- wyrównaj treść sekcji z kolumnami 2–11 -->
+      <div v-reveal class="col-span-full flex flex-col gap-4 lg:col-start-2 lg:col-end-12">
         <p
-          class="h-[18px] w-fit text-[12px] leading-[18px] font-normal tracking-[-0.01em] text-[var(--color-green)]"
+          class="h-4.5 w-fit text-xs leading-4.5 font-normal tracking-[-0.01em] text-(--color-green)"
         >
           Oferta
         </p>
 
-        <!-- Text -->
-        <div class="flex w-full max-w-[709px] flex-col gap-[32px]">
+        <div class="flex w-full max-w-177.25 flex-col gap-8">
           <h2
-            class="text-[40px] leading-[46px] md:text-[44px] md:leading-[51px] lg:text-[48px] lg:leading-[55px]"
+            class="text-[40px] leading-11.5 md:text-[44px] md:leading-12.75 lg:text-5xl lg:leading-13.75"
           >
-            <span class="[font-family:var(--font-heading)] font-medium tracking-[-0.03em]">
-              Działamy </span
-            ><span class="[font-family:var(--font-body)] font-medium italic tracking-normal">
-              kompleksowo
-            </span>
+            <span class="font-heading font-medium tracking-[-0.03em]"> Działamy </span>
+
+            <span class="font-medium italic tracking-normal"> kompleksowo </span>
           </h2>
 
           <p
-            class="w-full max-w-[709px] text-[16px] leading-[24px] font-normal tracking-[-0.01em] text-stone-700"
+            class="w-full max-w-177.25 text-base leading-6 font-normal tracking-[-0.01em] text-stone-700"
           >
             <span v-for="(line, index) in offerDescriptionLines" :key="line" class="lg:block">
-              {{ line
-              }}<span v-if="index < offerDescriptionLines.length - 1" class="lg:hidden"
-                >&nbsp;</span
-              >
+              {{ line }}
+
+              <span v-if="index < offerDescriptionLines.length - 1" class="lg:hidden">
+                &nbsp;
+              </span>
             </span>
           </p>
         </div>
       </div>
 
-      <!--
-        Cards:
-        - zajmują całą szerokość głównej siatki,
-        - każda karta zajmuje 4 z 12 kolumn,
-        - gutter między kartami pochodzi z globalnej siatki.
-      -->
+      <!-- rozłóż każdą kartę na czterech kolumnach desktopowej siatki -->
       <div
-        class="col-span-full mt-16 grid grid-cols-1 gap-6 md:grid-cols-2 lg:mt-[96px] lg:grid-cols-12 lg:gap-x-[var(--grid-gutter)] lg:gap-y-0"
+        class="col-span-full mt-16 grid grid-cols-1 gap-6 md:grid-cols-2 lg:mt-24 lg:grid-cols-12 lg:gap-x-(--grid-gutter) lg:gap-y-0"
       >
         <div
           v-for="(item, index) in offerItems"

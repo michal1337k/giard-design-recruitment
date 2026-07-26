@@ -1,8 +1,9 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
+import { ref } from 'vue'
 
-import { Swiper, SwiperSlide } from 'swiper/vue'
 import { A11y, Autoplay, EffectFade, Keyboard } from 'swiper/modules'
+import { Swiper, SwiperSlide } from 'swiper/vue'
+
 import 'swiper/css'
 import 'swiper/css/effect-fade'
 
@@ -10,28 +11,23 @@ import { heroSlides } from '@/data/heroSlides'
 
 const swiperModules = [A11y, Autoplay, EffectFade, Keyboard]
 
-/* aktualny numer slajdu */
+const hasMultipleSlides = heroSlides.length > 1
 const activeSlideIndex = ref(0)
 
-const heroSection = ref(null)
-let isPointerInsideHero = false
-
-let swiperInstance = null
-
-/*
- ustawienie systemowe użytkownika
- jeżeli ograniczył animacje w systemie, nie uruchamiajj automatycznego przesuwania slajdów
- */
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-const autoplayOptions = prefersReducedMotion
-  ? false
-  : {
-      delay: 7500,
-      pauseOnMouseEnter: false,
-      disableOnInteraction: false,
-      waitForTransition: false,
-    }
+const autoplayOptions =
+  prefersReducedMotion || !hasMultipleSlides
+    ? false
+    : {
+        delay: 7500,
+        pauseOnMouseEnter: false,
+        disableOnInteraction: false,
+        waitForTransition: false,
+      }
+
+let swiperInstance = null
+let isPointerInsideHero = false
 
 function handleSwiper(swiper) {
   swiperInstance = swiper
@@ -41,7 +37,7 @@ function handleSlideChange(swiper) {
   activeSlideIndex.value = swiper.realIndex
 
   if (isPointerInsideHero) {
-    swiper.autoplay.stop()
+    swiper.autoplay?.stop()
   }
 }
 
@@ -76,29 +72,25 @@ function handlePointerLeave(event) {
   }
 
   isPointerInsideHero = false
-  swiperInstance?.autoplay?.start()
+
+  if (hasMultipleSlides && !prefersReducedMotion) {
+    swiperInstance?.autoplay?.start()
+  }
 }
-
-onMounted(() => {
-  heroSection.value?.addEventListener('pointerenter', handlePointerEnter)
-
-  heroSection.value?.addEventListener('pointerleave', handlePointerLeave)
-})
-
-onUnmounted(() => {
-  heroSection.value?.removeEventListener('pointerenter', handlePointerEnter)
-
-  heroSection.value?.removeEventListener('pointerleave', handlePointerLeave)
-})
 </script>
 
 <template>
-  <section id="intro" ref="heroSection" class="relative isolate overflow-hidden">
+  <section
+    id="intro"
+    class="relative isolate overflow-hidden"
+    @pointerenter="handlePointerEnter"
+    @pointerleave="handlePointerLeave"
+  >
     <Swiper
       class="hero-swiper"
       :modules="swiperModules"
       :slides-per-view="1"
-      :rewind="heroSlides.length > 1"
+      :rewind="hasMultipleSlides"
       :speed="1200"
       effect="fade"
       :fade-effect="{ crossFade: true }"
@@ -111,25 +103,16 @@ onUnmounted(() => {
       @slide-change="handleSlideChange"
     >
       <SwiperSlide v-for="(slide, index) in heroSlides" :key="slide.id">
-        <!--
-    Cały article jest pojedynczym slajdem:
-    - tekst i zdjęcie zmieniają się razem,
-    - tło obejmuje pełną szerokość viewportu.
-  -->
-        <article class="relative bg-[var(--color-beige)] lg:h-[737px]">
-          <div class="page-grid lg:h-[737px]">
-            <!--
-              Lewa część:
-              - desktop: kolumny 1–6,
-            -->
+        <!-- połącz tekst i zdjęcie w jeden slajd -->
+        <article class="relative bg-(--color-beige) lg:h-184.25">
+          <div class="page-grid lg:h-184.25">
             <div
-              class="col-span-full row-start-1 flex min-h-[520px] items-center py-16 md:min-h-[580px] md:py-20 lg:col-start-1 lg:col-end-7 lg:h-[737px] lg:min-h-0 lg:py-0"
+              class="col-span-full row-start-1 flex min-h-130 items-center py-16 md:min-h-145 md:py-20 lg:col-start-1 lg:col-end-7 lg:h-184.25 lg:min-h-0 lg:py-0"
             >
-              <div class="hero-copy flex w-full flex-col gap-[72px] lg:h-[448px] lg:w-[599px]">
-                <!-- grupa Text -->
-                <div class="flex flex-col gap-[44px]">
+              <div class="hero-copy flex w-full flex-col gap-18 lg:h-112 lg:w-149.75">
+                <div class="flex flex-col gap-11">
                   <h1
-                    class="font-heading w-full text-[42px] leading-[48px] font-medium tracking-normal md:text-[50px] md:leading-[58px] lg:h-[210px] lg:w-[599px] lg:text-[60px] lg:leading-[70px]"
+                    class="font-heading w-full text-[42px] leading-12 font-medium tracking-normal md:text-[50px] md:leading-14.5 lg:h-52.5 lg:w-149.75 lg:text-[60px] lg:leading-17.5"
                   >
                     <template v-if="slide.titleLines">
                       <span v-for="line in slide.titleLines" :key="line" class="lg:block">
@@ -144,7 +127,7 @@ onUnmounted(() => {
                   </h1>
 
                   <p
-                    class="w-full max-w-[489px] text-[16px] leading-[24px] font-normal text-stone-700 lg:h-[72px] lg:w-[489px]"
+                    class="w-full max-w-122.25 text-base leading-6 font-normal text-stone-700 lg:h-18 lg:w-122.25"
                   >
                     <template v-if="slide.descriptionLines">
                       <span
@@ -169,25 +152,24 @@ onUnmounted(() => {
                   </p>
                 </div>
 
-                <!-- grupa Buttons -->
-                <div class="flex w-full flex-wrap gap-4 lg:w-[493px] lg:flex-nowrap lg:gap-[36px]">
+                <div class="flex w-full flex-wrap gap-4 lg:w-123.25 lg:flex-nowrap lg:gap-9">
                   <a
                     :href="slide.primaryAction.href"
-                    class="inline-flex h-[50px] w-full shrink-0 items-center justify-center whitespace-nowrap rounded-[200px] bg-[var(--color-green)] px-[24px] text-[16px] leading-[24px] font-normal text-[var(--color-cream)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(0,0,0,0.16)] active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-[var(--color-green)] focus-visible:ring-offset-4 focus-visible:outline-none sm:w-auto lg:w-[208px]"
+                    class="inline-flex h-12.5 w-full shrink-0 items-center justify-center rounded-full bg-(--color-green) px-6 text-base leading-6 font-normal whitespace-nowrap text-(--color-cream) transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(0,0,0,0.16)] focus-visible:ring-2 focus-visible:ring-(--color-green) focus-visible:ring-offset-4 focus-visible:outline-none active:scale-[0.97] sm:w-auto lg:w-52"
                   >
                     {{ slide.primaryAction.label }}
                   </a>
 
                   <a
                     :href="slide.secondaryAction.href"
-                    class="group inline-flex h-[50px] w-full shrink-0 items-center justify-between whitespace-nowrap rounded-[200px] border border-[var(--color-green)] bg-transparent px-[22px] text-[16px] leading-[24px] font-normal text-[var(--color-green)] transition-all duration-300 hover:-translate-y-1 hover:bg-[var(--color-green)] hover:text-white active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-[var(--color-green)] focus-visible:ring-offset-4 focus-visible:outline-none sm:w-auto lg:w-[249px]"
+                    class="group inline-flex h-12.5 w-full shrink-0 items-center justify-between rounded-full border border-(--color-green) bg-transparent px-5.5 text-base leading-6 font-normal whitespace-nowrap text-(--color-green) transition-all duration-300 hover:-translate-y-1 hover:bg-(--color-green) hover:text-white focus-visible:ring-2 focus-visible:ring-(--color-green) focus-visible:ring-offset-4 focus-visible:outline-none active:scale-[0.97] sm:w-auto lg:w-62.25"
                   >
                     <span>
                       {{ slide.secondaryAction.label }}
                     </span>
 
                     <svg
-                      class="size-[16px] shrink-0 transition-transform duration-300 group-hover:translate-y-1"
+                      class="size-4 shrink-0 transition-transform duration-300 group-hover:translate-y-1"
                       viewBox="0 0 16 16"
                       fill="none"
                       stroke="currentColor"
@@ -204,14 +186,9 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <!--
-              Prawa część:
-              - zaczyna się na początku 7 kolumny,
-              - kończy siatkę na końcu 12 kolumny,
-              - następnie rozszerza się aż do prawej krawędzi ekranu.
-            -->
+            <!-- rozszerz zdjęcie od kolumn 7–12 do prawej krawędzi viewportu -->
             <div
-              class="hero-media relative col-span-full row-start-2 min-h-[380px] overflow-hidden md:min-h-[480px] lg:col-start-7 lg:col-end-13 lg:row-start-1 lg:h-[737px] lg:min-h-0"
+              class="hero-media relative col-span-full row-start-2 min-h-95 overflow-hidden md:min-h-120 lg:col-start-7 lg:col-end-13 lg:row-start-1 lg:h-184.25 lg:min-h-0"
             >
               <img
                 :src="slide.image"
@@ -223,28 +200,26 @@ onUnmounted(() => {
                 decoding="async"
               />
 
-              <div
-                class="pointer-events-none absolute inset-0 bg-black/[0.03]"
-                aria-hidden="true"
-              ></div>
+              <div class="pointer-events-none absolute inset-0 bg-black/3" aria-hidden="true"></div>
             </div>
           </div>
         </article>
       </SwiperSlide>
     </Swiper>
 
-    <!-- nawigacja slidera -->
+    <!-- wyświetl nawigację przy więcej niż jednym slajdzie -->
     <div
-      class="absolute right-0 bottom-0 z-50 flex h-[96px] w-[192px] items-center gap-[32px] bg-[var(--color-cream)] px-[32px]"
+      v-if="hasMultipleSlides"
+      class="absolute right-0 bottom-0 z-50 flex h-24 w-48 items-center gap-8 bg-(--color-cream) px-8"
     >
       <button
         type="button"
-        class="group flex size-[48px] shrink-0 items-center justify-center transition-opacity duration-300 hover:opacity-55 active:scale-95"
+        class="group flex size-12 shrink-0 items-center justify-center transition-opacity duration-300 hover:opacity-55 active:scale-95"
         aria-label="Pokaż poprzedni slajd"
         @click.stop="showPreviousSlide"
       >
         <svg
-          class="h-[16px] w-[24.29px] shrink-0 transition-transform duration-300 group-hover:-translate-x-1"
+          class="h-4 w-[24.29px] shrink-0 transition-transform duration-300 group-hover:-translate-x-1"
           viewBox="0 0 24.29 16"
           fill="none"
           stroke="currentColor"
@@ -260,12 +235,12 @@ onUnmounted(() => {
 
       <button
         type="button"
-        class="group flex size-[48px] shrink-0 items-center justify-center transition-opacity duration-300 hover:opacity-55 active:scale-95"
+        class="group flex size-12 shrink-0 items-center justify-center transition-opacity duration-300 hover:opacity-55 active:scale-95"
         aria-label="Pokaż następny slajd"
         @click.stop="showNextSlide"
       >
         <svg
-          class="h-[16px] w-[24.29px] shrink-0 transition-transform duration-300 group-hover:translate-x-1"
+          class="h-4 w-[24.29px] shrink-0 transition-transform duration-300 group-hover:translate-x-1"
           viewBox="0 0 24.29 16"
           fill="none"
           stroke="currentColor"
@@ -280,7 +255,7 @@ onUnmounted(() => {
       </button>
     </div>
 
-    <p class="sr-only" aria-live="polite">
+    <p v-if="hasMultipleSlides" class="sr-only" aria-live="polite">
       Slajd {{ activeSlideIndex + 1 }} z {{ heroSlides.length }}
     </p>
   </section>
@@ -304,10 +279,6 @@ onUnmounted(() => {
   transition-delay: 160ms;
 }
 
-:deep(.swiper-slide-active) .hero-copy > :nth-child(3) {
-  transition-delay: 300ms;
-}
-
 .hero-image {
   transform: scale(1.045);
   transition: transform 6s ease-out;
@@ -325,18 +296,17 @@ onUnmounted(() => {
   pointer-events: auto;
 }
 
-/* wyłącz zbędne animacje dla użytkowników, którzy ograniczyli ruch w ustawieniach systemowych */
+/* wyłącz animacje, gdy użytkownik ograniczył ruch w systemie */
 @media (prefers-reduced-motion: reduce) {
   .hero-copy > *,
   .hero-image {
     opacity: 1;
     transform: none;
-    transition-duration: 0.01ms;
-    transition-delay: 0ms;
+    transition: none;
   }
 }
 
-/* na desktopie element zajmuje kolumny 7–12 i wychodzi poza prawą krawędź siatki aż do prawej krawędzi viewportu */
+/* rozszerz zdjęcie od siatki do prawej krawędzi viewportu */
 @media (width >= 1024px) {
   .hero-media {
     width: calc(100% + ((100vw - var(--page-grid-width)) / 2));

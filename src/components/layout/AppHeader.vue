@@ -1,80 +1,36 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+
 import logo from '@/assets/brand/giarddesign-logo.svg'
+import { navigationLinks, offerLinks, searchableLinks } from '@/data/headerData'
 
 const isDesktopOfferOpen = ref(false)
 const isMobileMenuOpen = ref(false)
 const isMobileOfferOpen = ref(false)
 const isSearchOpen = ref(false)
+
 const searchQuery = ref('')
 const searchInput = ref(null)
 
-const offerLinks = [
-  {
-    label: 'Projekty',
-    description: 'Kompleksowe projekty ogrodów',
-    href: '#offer',
-  },
-  {
-    label: 'Wizualizacje',
-    description: 'Prezentacja koncepcji w technologii 3D',
-    href: '#offer',
-  },
-  {
-    label: 'Realizacje',
-    description: 'Zobacz nasze ukończone realizacje',
-    href: '#projects',
-  },
-]
+let previousBodyOverflow = ''
 
-const searchableLinks = [
-  {
-    label: 'Strona główna',
-    href: '#intro',
-    keywords: ['intro', 'ogród', 'aranżacja', 'start'],
-  },
-  {
-    label: 'Oferta',
-    href: '#offer',
-    keywords: ['projekty', 'wizualizacje', 'usługi'],
-  },
-  {
-    label: 'O firmie',
-    href: '#about',
-    keywords: ['firma', 'giarddesign', 'informacje'],
-  },
-  {
-    label: 'Realizacje',
-    href: '#projects',
-    keywords: ['galeria', 'projekty', 'ogrody', 'zdjęcia'],
-  },
-  {
-    label: 'Kontakt',
-    href: '#contact',
-    keywords: ['telefon', 'e-mail', 'instagram'],
-  },
-]
+const isPageScrollLocked = computed(() => isMobileMenuOpen.value || isSearchOpen.value)
 
-/*
-  funkcja wykona się ponownie, gdy zmieni się `searchQuery`.
-*/
+function normalizeSearchValue(value) {
+  return value.toLocaleLowerCase('pl-PL')
+}
+
 const filteredSearchResults = computed(() => {
-  const query = searchQuery.value.trim().toLocaleLowerCase('pl-PL')
+  const query = normalizeSearchValue(searchQuery.value.trim())
 
-  /*
-    gdy pole jest puste, pokaż wszystkie dostępne sekcje
-  */
   if (!query) {
     return searchableLinks
   }
 
-  /*
-    zostaw tylko elementy, których nazwa albo słowa kluczowe zawierają wpisane przez użytkownika wyrażenie
-  */
-  return searchableLinks.filter((item) => {
-    const searchableValues = [item.label, ...item.keywords]
-
-    return searchableValues.some((value) => value.toLocaleLowerCase('pl-PL').includes(query))
+  return searchableLinks.filter(({ label, keywords }) => {
+    return [label, ...keywords].some((value) => {
+      return normalizeSearchValue(value).includes(query)
+    })
   })
 })
 
@@ -92,9 +48,6 @@ function closeSearch() {
   searchQuery.value = ''
 }
 
-/*
-  funkcja do zamknięcia wszystkich interaktywnych elementów
-*/
 function closeAllPanels() {
   closeDesktopOffer()
   closeMobileMenu()
@@ -123,6 +76,7 @@ async function openSearch() {
   closeAllPanels()
   isSearchOpen.value = true
 
+  // poczekaj, aż vue wyrenderuje wyszukiwarkę, a następnie ustaw fokus
   await nextTick()
   searchInput.value?.focus()
 }
@@ -136,27 +90,26 @@ function toggleSearch() {
   openSearch()
 }
 
-/*
-  po kliknięciu linku w menu lub wyszukiwarce
-*/
 function handleNavigationClick() {
   closeAllPanels()
 }
 
-/*
-  klawisz ESC do zamknięcia
-*/
 function handleKeydown(event) {
   if (event.key === 'Escape') {
     closeAllPanels()
   }
 }
 
-/*
-  gdy otwarta jest wyszukiwarka albo menu mobilne, blokuj przewijanie strony znajdującej się pod spodem
-*/
-watch([isMobileMenuOpen, isSearchOpen], ([mobileOpen, searchOpen]) => {
-  document.body.style.overflow = mobileOpen || searchOpen ? 'hidden' : ''
+watch(isPageScrollLocked, (isLocked, wasLocked) => {
+  if (isLocked && !wasLocked) {
+    previousBodyOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return
+  }
+
+  if (!isLocked && wasLocked) {
+    document.body.style.overflow = previousBodyOverflow
+  }
 })
 
 onMounted(() => {
@@ -165,40 +118,40 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
-  document.body.style.overflow = ''
+  document.body.style.overflow = previousBodyOverflow
 })
 </script>
 
 <template>
   <header class="relative z-50 bg-white">
     <div class="page-grid">
-      <div class="col-span-full flex h-[72px] items-center justify-between">
+      <div class="col-span-full flex h-18 items-center justify-between">
         <a
           href="#intro"
-          class="flex h-[19px] w-[114.37px] shrink-0 items-center"
+          class="flex h-4.75 w-[114.37px] shrink-0 items-center"
           aria-label="Przejdź na początek strony"
           @click="handleNavigationClick"
         >
-          <img :src="logo" alt="GiardDesign" class="h-[19px] w-[114.37px]" />
+          <img :src="logo" alt="GiardDesign" class="h-4.75 w-[114.37px]" />
         </a>
 
-        <!-- nawigacja desktopowa -->
+        <!-- wyświetl nawigację desktopową -->
         <nav
-          class="hidden h-[24px] w-[442px] shrink-0 items-center justify-between text-[14px] leading-[21px] font-normal tracking-[-0.14px] lg:flex"
+          class="hidden h-6 w-110.5 shrink-0 items-center justify-between text-sm leading-5.25 font-normal tracking-[-0.14px] lg:flex"
           aria-label="Główna nawigacja"
         >
-          <div class="relative flex h-[21px] w-[59px] shrink-0 items-center">
+          <div class="relative flex h-5.25 w-14.75 shrink-0 items-center">
             <button
               type="button"
-              class="flex h-[21px] w-[59px] items-center gap-[5px] whitespace-nowrap transition-opacity hover:opacity-60"
+              class="flex h-5.25 w-14.75 items-center gap-1.25 whitespace-nowrap transition-opacity hover:opacity-60"
               aria-controls="desktop-offer-menu"
               :aria-expanded="isDesktopOfferOpen"
               @click.stop="toggleDesktopOffer"
             >
-              <span class="h-[21px] w-[42px] text-left"> Oferta </span>
+              <span class="h-5.25 w-10.5 text-left"> Oferta </span>
 
               <svg
-                class="size-[12px] shrink-0 transition-transform duration-300"
+                class="size-3 shrink-0 transition-transform duration-300"
                 :class="{ 'rotate-180': isDesktopOfferOpen }"
                 viewBox="0 0 12 12"
                 fill="none"
@@ -216,7 +169,7 @@ onUnmounted(() => {
               <div
                 v-if="isDesktopOfferOpen"
                 id="desktop-offer-menu"
-                class="absolute top-[48px] left-0 z-[70] w-72 rounded-2xl bg-white p-3 shadow-xl"
+                class="absolute top-12 left-0 z-70 w-72 rounded-2xl bg-white p-3 shadow-xl"
               >
                 <a
                   v-for="item in offerLinks"
@@ -238,39 +191,25 @@ onUnmounted(() => {
           </div>
 
           <a
-            href="#about"
-            class="flex h-[21px] w-[51px] shrink-0 items-center whitespace-nowrap transition-opacity hover:opacity-60"
+            v-for="item in navigationLinks"
+            :key="item.href"
+            :href="item.href"
+            class="flex h-5.25 shrink-0 items-center whitespace-nowrap transition-opacity hover:opacity-60"
             @click="handleNavigationClick"
           >
-            O firmie
+            {{ item.label }}
           </a>
 
-          <a
-            href="#projects"
-            class="flex h-[21px] w-[68px] shrink-0 items-center whitespace-nowrap transition-opacity hover:opacity-60"
-            @click="handleNavigationClick"
-          >
-            Realizacje
-          </a>
-
-          <a
-            href="#contact"
-            class="flex h-[21px] w-[50px] shrink-0 items-center whitespace-nowrap transition-opacity hover:opacity-60"
-            @click="handleNavigationClick"
-          >
-            Kontakt
-          </a>
-
-          <!-- ikona lupy-->
           <button
             type="button"
-            class="flex size-[24px] shrink-0 items-center justify-center transition-opacity hover:opacity-60"
+            class="flex size-6 shrink-0 items-center justify-center transition-opacity hover:opacity-60"
             aria-label="Otwórz wyszukiwarkę"
+            aria-controls="page-search-dialog"
             :aria-expanded="isSearchOpen"
             @click="toggleSearch"
           >
             <svg
-              class="h-[19.5px] w-[19px]"
+              class="h-[19.5px] w-4.75"
               viewBox="0 0 20 20"
               fill="none"
               stroke="currentColor"
@@ -284,7 +223,7 @@ onUnmounted(() => {
           </button>
         </nav>
 
-        <!-- przycisk menu mobilnego - animacja zmiany hamburgera w X -->
+        <!-- wyświetl przycisk menu mobilnego -->
         <button
           type="button"
           class="relative size-10 lg:hidden"
@@ -293,32 +232,26 @@ onUnmounted(() => {
           :aria-label="isMobileMenuOpen ? 'Zamknij menu' : 'Otwórz menu'"
           @click="toggleMobileMenu"
         >
-          <!-- pierwsza kreska hamburgera xd -->
           <span
             class="absolute top-1/2 left-1/2 h-px w-6 -translate-x-1/2 bg-black transition-all duration-300"
-            :class="isMobileMenuOpen ? '-translate-y-1/2 rotate-45' : '-translate-y-[7px]'"
+            :class="isMobileMenuOpen ? '-translate-y-1/2 rotate-45' : '-translate-y-1.75'"
           />
 
-          <!-- środkowa kreska znika po otwarciu menu -->
           <span
             class="absolute top-1/2 left-1/2 h-px w-6 -translate-x-1/2 -translate-y-1/2 bg-black transition-all duration-300"
             :class="isMobileMenuOpen ? 'opacity-0' : 'opacity-100'"
           />
 
-          <!-- trzecia kreska -->
           <span
             class="absolute top-1/2 left-1/2 h-px w-6 -translate-x-1/2 bg-black transition-all duration-300"
-            :class="isMobileMenuOpen ? '-translate-y-1/2 -rotate-45' : 'translate-y-[6px]'"
+            :class="isMobileMenuOpen ? '-translate-y-1/2 -rotate-45' : 'translate-y-1.5'"
           />
         </button>
       </div>
     </div>
   </header>
 
-  <!--
-    przezroczysta warstwa pod menu desktopowym.
-    kliknięcie poza dropdownem zamknie menu.
-  -->
+  <!-- zamknij menu po kliknięciu poza dropdownem -->
   <div
     v-if="isDesktopOfferOpen"
     class="fixed inset-0 z-40 hidden lg:block"
@@ -326,23 +259,23 @@ onUnmounted(() => {
     @click="closeDesktopOffer"
   ></div>
 
-  <!-- ciemne tło pod menu mobilnym -->
+  <!-- przyciemnij tło pod menu mobilnym -->
   <Transition name="fade">
     <button
       v-if="isMobileMenuOpen"
       type="button"
-      class="fixed inset-0 top-[72px] z-30 bg-black/30 lg:hidden"
+      class="fixed inset-0 top-18 z-30 bg-black/30 lg:hidden"
       aria-label="Zamknij menu"
       @click="closeMobileMenu"
     ></button>
   </Transition>
 
-  <!-- nawigacja mobilna -->
+  <!-- wyświetl nawigację mobilną -->
   <Transition name="mobile-menu">
     <div
       v-if="isMobileMenuOpen"
       id="mobile-navigation"
-      class="fixed inset-x-0 top-[72px] z-40 max-h-[calc(100dvh-72px)] overflow-y-auto border-t border-stone-200 bg-white lg:hidden"
+      class="fixed inset-x-0 top-18 z-40 max-h-[calc(100dvh-72px)] overflow-y-auto border-t border-stone-200 bg-white lg:hidden"
     >
       <nav class="px-6 py-6" aria-label="Nawigacja mobilna">
         <button
@@ -388,32 +321,19 @@ onUnmounted(() => {
         </Transition>
 
         <a
-          href="#about"
+          v-for="item in navigationLinks"
+          :key="item.href"
+          :href="item.href"
           class="block border-b border-stone-200 py-4 text-lg"
           @click="handleNavigationClick"
         >
-          O firmie
-        </a>
-
-        <a
-          href="#projects"
-          class="block border-b border-stone-200 py-4 text-lg"
-          @click="handleNavigationClick"
-        >
-          Realizacje
-        </a>
-
-        <a
-          href="#contact"
-          class="block border-b border-stone-200 py-4 text-lg"
-          @click="handleNavigationClick"
-        >
-          Kontakt
+          {{ item.label }}
         </a>
 
         <button
           type="button"
           class="mt-6 flex w-full items-center justify-center gap-3 rounded-full bg-[#1d6337] px-6 py-4 text-white"
+          aria-controls="page-search-dialog"
           @click="openSearch"
         >
           <svg
@@ -434,10 +354,9 @@ onUnmounted(() => {
     </div>
   </Transition>
 
-  <!-- wysuwana wyszukiwarka -->
+  <!-- wyświetl wyszukiwarkę -->
   <Transition name="search-panel">
-    <div v-if="isSearchOpen" class="fixed inset-0 z-[80]">
-      <!-- kliknięcie w przyciemnione tło zamknie wyszukiwarkę -->
+    <div v-if="isSearchOpen" class="fixed inset-0 z-80">
       <button
         type="button"
         class="absolute inset-0 bg-black/35"
@@ -446,13 +365,14 @@ onUnmounted(() => {
       ></button>
 
       <section
+        id="page-search-dialog"
         class="search-sheet relative w-full bg-white shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-label="Wyszukiwarka"
       >
         <div class="page-grid">
-          <!-- Cała szerokość globalnej siatki. -->
+          <!-- zajmij całą szerokość globalnej siatki -->
           <div class="col-span-full py-8 md:py-12">
             <div class="flex items-center justify-between gap-6">
               <p class="text-sm font-medium tracking-widest text-stone-500 uppercase">
@@ -478,7 +398,7 @@ onUnmounted(() => {
               </button>
             </div>
 
-            <form class="mt-6" @submit.prevent>
+            <form class="mt-6" role="search" @submit.prevent>
               <label for="page-search" class="sr-only"> Wyszukaj sekcję strony </label>
 
               <input
@@ -518,7 +438,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* rozwijane menu Oferta */
+/* animuj rozwijane menu oferty */
 .dropdown-enter-active,
 .dropdown-leave-active {
   transition:
@@ -526,24 +446,13 @@ onUnmounted(() => {
     transform 180ms ease;
 }
 
-.dropdown-enter-from,
-.dropdown-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
-}
-
-/* przyciemnione tło menu mobilnego */
+/* animuj przyciemnione tło menu mobilnego */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 250ms ease;
 }
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* główne menu mobilne */
+/* animuj główne menu mobilne */
 .mobile-menu-enter-active,
 .mobile-menu-leave-active {
   transition:
@@ -551,13 +460,7 @@ onUnmounted(() => {
     transform 250ms ease;
 }
 
-.mobile-menu-enter-from,
-.mobile-menu-leave-to {
-  opacity: 0;
-  transform: translateY(-16px);
-}
-
-/* podmenu Oferta na urządzeniach mobilnych */
+/* animuj podmenu oferty na urządzeniach mobilnych */
 .mobile-submenu-enter-active,
 .mobile-submenu-leave-active {
   transition:
@@ -565,31 +468,32 @@ onUnmounted(() => {
     transform 200ms ease;
 }
 
-.mobile-submenu-enter-from,
-.mobile-submenu-leave-to {
-  opacity: 0;
-  transform: translateY(-6px);
-}
-
-/* całe tło wyszukiwarki */
+/* animuj tło wyszukiwarki */
 .search-panel-enter-active,
 .search-panel-leave-active {
   transition: opacity 300ms ease;
 }
 
-.search-panel-enter-from,
-.search-panel-leave-to {
-  opacity: 0;
-}
-
-/* przesuniecie bialego panelu do góry */
+/* wysuń panel wyszukiwarki od górnej krawędzi */
 .search-panel-enter-active .search-sheet,
 .search-panel-leave-active .search-sheet {
   transition: transform 300ms ease;
 }
 
-.search-panel-enter-from .search-sheet,
-.search-panel-leave-to .search-sheet {
-  transform: translateY(-100%);
+@media (prefers-reduced-motion: reduce) {
+  .dropdown-enter-active,
+  .dropdown-leave-active,
+  .fade-enter-active,
+  .fade-leave-active,
+  .mobile-menu-enter-active,
+  .mobile-menu-leave-active,
+  .mobile-submenu-enter-active,
+  .mobile-submenu-leave-active,
+  .search-panel-enter-active,
+  .search-panel-leave-active,
+  .search-panel-enter-active .search-sheet,
+  .search-panel-leave-active .search-sheet {
+    transition-duration: 1ms;
+  }
 }
 </style>

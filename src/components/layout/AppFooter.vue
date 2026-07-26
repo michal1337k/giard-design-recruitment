@@ -1,63 +1,54 @@
 <script setup>
 import adRespectLogo from '@/assets/icons/footer/adrespect-logo.svg'
 import footerLogo from '@/assets/icons/footer/giarddesign.svg'
+
 import { footerData } from '@/data/footerData'
 </script>
 
 <template>
-  <footer class="bg-[#111111] py-14 text-white md:py-16 lg:h-[499px] lg:py-[80px]">
+  <footer id="contact" class="bg-(--color-dark) py-14 text-white md:py-16 lg:h-124.75 lg:py-20">
     <div class="page-grid lg:h-full">
-      <!--
-        Główna zawartość:
-        - kolumny 2–11
-      -->
+      <!-- wyrównaj zawartość stopki z kolumnami 2–11 -->
       <div
-        class="col-span-full flex flex-col gap-14 lg:col-start-2 lg:col-end-12 lg:h-full lg:gap-[120px]"
+        class="col-span-full flex flex-col gap-14 lg:col-start-2 lg:col-end-12 lg:h-full lg:gap-30"
       >
-        <!-- Text1 -->
-        <div class="flex flex-col gap-10 lg:h-[195px] lg:w-full lg:gap-[62px]">
-          <!-- Line1 -->
+        <div class="flex flex-col gap-10 lg:h-48.75 lg:w-full lg:gap-15.5">
           <div
-            class="flex flex-col gap-8 md:flex-row md:items-center md:justify-between lg:h-[50px] lg:w-full"
+            class="flex flex-col gap-8 md:flex-row md:items-center md:justify-between lg:h-12.5 lg:w-full"
           >
-            <!-- Logo -->
             <a
               :href="footerData.logo.href"
-              class="inline-flex h-[19px] w-[114.37px] shrink-0 transition-opacity hover:opacity-70 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-[#111111] focus-visible:outline-none"
+              class="inline-flex h-4.75 w-[114.37px] shrink-0 transition-opacity hover:opacity-70 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-(--color-dark) focus-visible:outline-none"
               :aria-label="footerData.logo.ariaLabel"
             >
-              <img :src="footerLogo" alt="GiardDesign" class="block h-[19px] w-[114.37px]" />
+              <img :src="footerLogo" alt="GiardDesign" class="block h-4.75 w-[114.37px]" />
             </a>
 
-            <!-- CTA -->
             <div
-              class="flex flex-col gap-5 sm:flex-row sm:items-center lg:h-[50px] lg:w-[522px] lg:shrink-0 lg:flex-nowrap lg:gap-[24px]"
+              class="flex flex-col gap-5 sm:flex-row sm:items-center lg:h-12.5 lg:w-130.5 lg:shrink-0 lg:flex-nowrap lg:gap-6"
             >
               <p
-                class="whitespace-nowrap text-[16px] leading-[24px] font-normal tracking-[-0.01em] text-white lg:w-[290px] lg:shrink-0"
+                class="text-base leading-6 font-normal tracking-[-0.01em] text-white lg:w-72.5 lg:shrink-0 lg:whitespace-nowrap"
               >
                 {{ footerData.cta.text }}
               </p>
 
               <a
                 :href="footerData.cta.buttonHref"
-                class="inline-flex h-[50px] w-fit shrink-0 items-center justify-center whitespace-nowrap rounded-[200px] bg-[var(--color-green)] px-[24px] pt-[12px] pb-[14px] text-[16px] leading-[24px] font-normal tracking-normal text-white transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:text-black hover:shadow-[0_12px_30px_rgba(0,0,0,0.2)] active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-[#111111] focus-visible:outline-none lg:w-[208px]"
+                class="inline-flex h-12.5 w-fit shrink-0 items-center justify-center rounded-full bg-(--color-green) px-6 pt-3 pb-3.5 text-base leading-6 font-normal tracking-normal whitespace-nowrap text-white transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:text-black hover:shadow-[0_12px_30px_rgba(0,0,0,0.2)] focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-(--color-dark) focus-visible:outline-none active:scale-[0.97] lg:w-52"
               >
                 {{ footerData.cta.buttonLabel }}
               </a>
             </div>
           </div>
 
-          <!-- Linia -->
           <div class="h-0 w-full border-t border-[#4f4f4f]" aria-hidden="true"></div>
 
-          <!-- Line2 -->
           <div
-            class="flex flex-col gap-8 md:flex-row md:items-start md:justify-between lg:h-[21px] lg:w-full"
+            class="flex flex-col gap-8 md:flex-row md:items-start md:justify-between lg:h-5.25 lg:w-full"
           >
-            <!-- Links -->
             <nav
-              class="flex flex-wrap items-center gap-x-8 gap-y-4 text-[14px] leading-[21px] font-normal tracking-[-0.01em] text-white md:gap-x-[48px] lg:h-[21px] lg:w-[379px] lg:flex-nowrap"
+              class="flex flex-wrap items-center gap-x-8 gap-y-4 text-sm leading-5.25 font-normal tracking-[-0.01em] text-white md:gap-x-12 lg:h-5.25 lg:w-94.75 lg:flex-nowrap"
               aria-label="Nawigacja w stopce"
             >
               <a
@@ -72,20 +63,19 @@ import { footerData } from '@/data/footerData'
               </a>
             </nav>
 
-            <!-- Kontakt -->
             <div
-              class="flex flex-col gap-4 text-[14px] leading-[21px] font-normal tracking-[-0.01em] text-white sm:flex-row sm:items-center lg:h-[21px] lg:w-[293px] lg:shrink-0 lg:flex-nowrap lg:gap-[48px]"
+              class="flex flex-col gap-4 text-sm leading-5.25 font-normal tracking-[-0.01em] text-white sm:flex-row sm:items-center lg:h-5.25 lg:w-73.25 lg:shrink-0 lg:flex-nowrap lg:gap-12"
             >
               <a
                 :href="footerData.contact.phone.href"
-                class="shrink-0 whitespace-nowrap transition-opacity hover:opacity-65 lg:w-[91px]"
+                class="shrink-0 whitespace-nowrap transition-opacity hover:opacity-65 lg:w-22.75"
               >
                 {{ footerData.contact.phone.label }}
               </a>
 
               <a
                 :href="footerData.contact.email.href"
-                class="shrink-0 whitespace-nowrap transition-opacity hover:opacity-65 lg:w-[154px]"
+                class="shrink-0 whitespace-nowrap transition-opacity hover:opacity-65 lg:w-38.5"
               >
                 {{ footerData.contact.email.label }}
               </a>
@@ -93,21 +83,18 @@ import { footerData } from '@/data/footerData'
           </div>
         </div>
 
-        <!-- Text2 -->
         <div
-          class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between lg:h-[24px] lg:w-full"
+          class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between lg:h-6 lg:w-full"
         >
-          <!-- Copyright -->
           <p
-            class="shrink-0 whitespace-nowrap text-[16px] leading-[24px] font-normal tracking-[-0.01em] text-white lg:w-[203px]"
+            class="shrink-0 whitespace-nowrap text-base leading-6 font-normal tracking-[-0.01em] text-white lg:w-50.75"
           >
             {{ footerData.copyright }}
           </p>
 
-          <!-- Made by -->
-          <div class="flex h-[24px] w-[194px] shrink-0 flex-nowrap items-center gap-[16px]">
+          <div class="flex h-6 w-48.5 shrink-0 flex-nowrap items-center gap-4">
             <span
-              class="w-[65px] shrink-0 whitespace-nowrap text-[16px] leading-[24px] font-normal tracking-[-0.01em] text-[#a8a8a8]"
+              class="w-16.25 shrink-0 whitespace-nowrap text-base leading-6 font-normal tracking-[-0.01em] text-[#a8a8a8]"
             >
               {{ footerData.madeBy.text }}
             </span>
@@ -116,10 +103,10 @@ import { footerData } from '@/data/footerData'
               :href="footerData.madeBy.href"
               target="_blank"
               rel="noopener noreferrer"
-              class="inline-flex h-[23px] w-[113px] shrink-0 transition-opacity hover:opacity-70 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-[#111111] focus-visible:outline-none"
+              class="inline-flex h-5.75 w-28.25 shrink-0 transition-opacity hover:opacity-70 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-(--color-dark) focus-visible:outline-none"
               :aria-label="footerData.madeBy.ariaLabel"
             >
-              <img :src="adRespectLogo" alt="adRespect" class="block h-[23px] w-[113px]" />
+              <img :src="adRespectLogo" alt="adRespect" class="block h-5.75 w-28.25" />
             </a>
           </div>
         </div>

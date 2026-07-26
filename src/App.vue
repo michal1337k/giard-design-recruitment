@@ -1,16 +1,19 @@
 <script setup>
-import AppHeader from '@/components/layout/AppHeader.vue'
+import { defineAsyncComponent } from 'vue'
+
 import AppFooter from '@/components/layout/AppFooter.vue'
+import AppHeader from '@/components/layout/AppHeader.vue'
 
-import HeroSection from '@/components/sections/HeroSection.vue'
-import OfferSection from '@/components/sections/OfferSection.vue'
 import AboutSection from '@/components/sections/AboutSection.vue'
-import ProjectsSection from '@/components/sections/ProjectsSection.vue'
+import HeroSection from '@/components/sections/HeroSection.vue'
 import InstagramSection from '@/components/sections/InstagramSection.vue'
+import OfferSection from '@/components/sections/OfferSection.vue'
+import ProjectsSection from '@/components/sections/ProjectsSection.vue'
 
-// ramka do porównania
-import DesignOverlay from '@/components/dev/DesignOverlay.vue'
 const isDevelopment = import.meta.env.DEV
+
+// ładuj nakładkę projektową dopiero w środowisku dev
+const DesignOverlay = defineAsyncComponent(() => import('@/components/dev/DesignOverlay.vue'))
 </script>
 
 <template>

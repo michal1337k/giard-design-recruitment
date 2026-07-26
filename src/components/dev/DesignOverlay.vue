@@ -31,7 +31,7 @@ onUnmounted(() => {
     v-if="isVisible"
     src="/reference/desktop-reference.png"
     alt=""
-    class="pointer-events-none absolute top-0 left-1/2 z-[9999] max-w-none -translate-x-1/2 opacity-50"
+    class="pointer-events-none absolute top-0 left-1/2 z-9999 max-w-none -translate-x-1/2 opacity-50"
     style="width: 1440px"
     aria-hidden="true"
   />

@@ -1,8 +1,6 @@
 @import 'tailwindcss';
 
-/*
-  Zmienne globalne
-*/
+/* globalne projektu */
 :root {
   --page-max-width: 1262px;
   --page-gutter: 24px;
@@ -22,11 +20,10 @@
 }
 
 /*
-  Globalna siatka strony.
- 
-  Mobile:  4 kolumny
-  Tablet:  8 kolumn
-  Desktop: 12 kolumn zgodnych z Figmą
+ * ustaw responsywną siatkę strony:
+ * - 4 kolumny na telefonach
+ * - 8 kolumn na tabletach
+ * - 12 kolumn zgodnych z figmą na desktopie
  */
 .page-grid {
   --page-grid-width: calc(100vw - 48px);
@@ -51,11 +48,10 @@
 
 @media (width >= 1024px) {
   .page-grid {
-    --page-grid-width: min(87.6389vw, 1262px);
+    --page-grid-width: min(87.6389vw, var(--page-max-width));
     --grid-gutter: min(4.4444vw, 64px);
 
     grid-template-columns: repeat(12, minmax(0, 1fr));
-    width: var(--page-grid-width);
   }
 }
 
@@ -68,8 +64,8 @@ html {
 }
 
 body {
-  margin: 0;
   min-width: 320px;
+  margin: 0;
 }
 
 button,
@@ -93,7 +89,7 @@ img {
   max-width: 100%;
 }
 
-/* pojawianie się głównych elementów podczas przewijania, animowanie wyłącznie opacity oraz transform, aby nie przeliczać layoutu */
+/* ukryj element przed uruchomieniem animacji przewijania */
 .scroll-reveal {
   opacity: 0;
   transform: translate3d(0, var(--reveal-distance, 24px), 0);
@@ -105,12 +101,18 @@ img {
   will-change: opacity, transform;
 }
 
+/* pokaż element po wejściu do obszaru widocznego */
 .scroll-reveal.is-revealed {
   opacity: 1;
   transform: translate3d(0, 0, 0);
 }
 
+/* wyłącz ruch, gdy użytkownik ograniczył animacje w systemie */
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   .scroll-reveal {
     opacity: 1;
     transform: none;

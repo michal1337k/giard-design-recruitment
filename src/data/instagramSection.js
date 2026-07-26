@@ -8,11 +8,11 @@ export const instagramSection = {
     ],
     [
       {
-        text: 'Znajdziesz nas na',
+        text: 'Znajdziesz nas na ',
         type: 'heading',
       },
       {
-        text: ' Instagramie.',
+        text: 'Instagramie.',
         type: 'accent',
       },
     ],

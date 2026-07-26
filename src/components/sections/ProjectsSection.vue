@@ -1,8 +1,8 @@
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 
-import Masonry from 'masonry-layout'
 import imagesLoaded from 'imagesloaded'
+import Masonry from 'masonry-layout'
 
 import ProjectLightbox from '@/components/ui/ProjectLightbox.vue'
 import { projects } from '@/data/projects'
@@ -10,10 +10,12 @@ import { projects } from '@/data/projects'
 const galleryGrid = ref(null)
 
 const isProjectsExpanded = ref(false)
-
 const activeProjectIndex = ref(null)
 
+const hasMultipleProjects = projects.length > 1
+
 let masonryInstance = null
+let imagesLoadedInstance = null
 
 const isLightboxOpen = computed(() => {
   return activeProjectIndex.value !== null
@@ -27,32 +29,26 @@ const activeProject = computed(() => {
   return projects[activeProjectIndex.value] ?? null
 })
 
-function refreshMasonry() {
+function layoutMasonry() {
+  masonryInstance?.layout()
+}
+
+function initializeMasonry() {
   if (!galleryGrid.value) {
     return
   }
 
-  if (!masonryInstance) {
-    masonryInstance = new Masonry(galleryGrid.value, {
-      itemSelector: '.gallery-item',
-
-      columnWidth: '.gallery-sizer',
-      gutter: '.gallery-gutter',
-
-      percentPosition: true,
-
-      horizontalOrder: true,
-
-      transitionDuration: '0s',
-    })
-  } else {
-    masonryInstance.reloadItems()
-    masonryInstance.layout()
-  }
-
-  imagesLoaded(galleryGrid.value).on('progress', () => {
-    masonryInstance?.layout()
+  masonryInstance = new Masonry(galleryGrid.value, {
+    itemSelector: '.gallery-item',
+    columnWidth: '.gallery-sizer',
+    gutter: '.gallery-gutter',
+    percentPosition: true,
+    horizontalOrder: true,
+    transitionDuration: '0s',
   })
+
+  imagesLoadedInstance = imagesLoaded(galleryGrid.value)
+  imagesLoadedInstance.on('progress', layoutMasonry)
 }
 
 function revealProjects() {
@@ -87,50 +83,46 @@ function showNextProject() {
   activeProjectIndex.value = (activeProjectIndex.value + 1) % projectsCount
 }
 
-onMounted(async () => {
-  await nextTick()
-  refreshMasonry()
+onMounted(() => {
+  initializeMasonry()
 })
 
 onUnmounted(() => {
+  imagesLoadedInstance?.off('progress', layoutMasonry)
+  imagesLoadedInstance = null
+
   masonryInstance?.destroy()
   masonryInstance = null
 })
 </script>
 
 <template>
-  <section
-    id="projects"
-    class="bg-[var(--color-beige)] pt-20 pb-12 md:pt-24 lg:pt-[120px] lg:pb-[41px]"
-  >
-    <div v-reveal class="flex flex-col gap-[16px] px-[var(--page-gutter)] lg:px-0 lg:pl-[160px]">
-      <p
-        class="w-fit text-[12px] leading-[18px] font-normal tracking-[-0.01em] text-[var(--color-green)]"
-      >
+  <section id="projects" class="bg-(--color-beige) pt-20 pb-12 md:pt-24 lg:pt-30 lg:pb-10.25">
+    <div v-reveal class="flex flex-col gap-4 px-(--page-gutter) lg:px-0 lg:pl-40">
+      <p class="w-fit text-xs leading-4.5 font-normal tracking-[-0.01em] text-(--color-green)">
         Realizacje
       </p>
 
       <h2
-        class="text-[40px] leading-[46px] md:text-[44px] md:leading-[51px] lg:text-[48px] lg:leading-[55px]"
+        class="text-[40px] leading-11.5 md:text-[44px] md:leading-12.75 lg:text-5xl lg:leading-13.75"
       >
-        <span class="[font-family:var(--font-heading)] font-medium tracking-[-0.03em]"> Nasze </span
-        ><span class="[font-family:var(--font-body)] font-medium italic tracking-normal">
-          projekty
-        </span>
+        <span class="font-heading font-medium tracking-[-0.03em]">Nasze</span
+        ><span class="font-medium italic tracking-normal">&nbsp;projekty</span>
       </h2>
     </div>
 
-    <div id="projects-gallery" class="relative mt-16 w-full overflow-hidden lg:mt-[96px]">
+    <div id="projects-gallery" class="relative mt-16 w-full overflow-hidden lg:mt-24">
       <div ref="galleryGrid" class="gallery-grid relative w-full">
-        <!-- szerokość pojedynczej kolumny. -->
+        <!-- zdefiniuj szerokość kolumny i odstępu dla masonry -->
         <div class="gallery-sizer" aria-hidden="true"></div>
+
         <div class="gallery-gutter" aria-hidden="true"></div>
 
         <button
           v-for="(project, index) in projects"
           :key="project.id"
           type="button"
-          class="gallery-item group relative block cursor-zoom-in overflow-hidden border-0 bg-transparent p-0 text-left focus-visible:ring-2 focus-visible:ring-[var(--color-green)] focus-visible:ring-offset-4 focus-visible:outline-none"
+          class="gallery-item group relative block cursor-zoom-in overflow-hidden border-0 bg-transparent p-0 text-left focus-visible:ring-2 focus-visible:ring-(--color-green) focus-visible:ring-offset-4 focus-visible:outline-none"
           :aria-label="`Otwórz zdjęcie: ${project.title}`"
           @click="openLightbox(index)"
         >
@@ -138,12 +130,12 @@ onUnmounted(() => {
             :src="project.image"
             :alt="project.alt"
             class="h-auto w-full transition-transform duration-700 ease-out group-hover:scale-[1.04] group-active:scale-[0.99]"
-            :loading="index < 3 ? 'eager' : 'lazy'"
+            loading="lazy"
             decoding="async"
           />
 
           <span
-            class="absolute inset-0 flex items-end bg-gradient-to-t from-black/70 via-black/5 to-transparent p-6 text-white opacity-0 transition-opacity duration-400 group-hover:opacity-100 group-focus-visible:opacity-100"
+            class="absolute inset-0 flex items-end bg-linear-to-t from-black/70 via-black/5 to-transparent p-6 text-white opacity-0 transition-opacity duration-400 group-hover:opacity-100 group-focus-visible:opacity-100"
           >
             <span>
               <span class="block text-xs text-white/70">
@@ -167,6 +159,7 @@ onUnmounted(() => {
               stroke="currentColor"
               stroke-width="1.8"
               stroke-linecap="round"
+              aria-hidden="true"
             >
               <circle cx="11" cy="11" r="6" />
               <path d="m20 20-4.5-4.5" />
@@ -183,13 +176,13 @@ onUnmounted(() => {
           class="projects-cover pointer-events-none absolute inset-0 z-20"
         >
           <div
-            class="projects-gradient absolute inset-x-0 bottom-0 top-[45%] md:top-[38%] lg:top-[32.2034%]"
+            class="projects-gradient absolute inset-x-0 top-[45%] bottom-0 md:top-[38%] lg:top-[32.2034%]"
             aria-hidden="true"
           ></div>
 
           <button
             type="button"
-            class="pointer-events-auto group absolute bottom-8 left-1/2 flex h-[50px] w-[123px] -translate-x-1/2 items-center gap-[8px] rounded-[200px] border border-[#111] px-[22px] pt-[12px] pb-[14px] text-[16px] leading-[24px] font-normal tracking-normal text-[#111] transition-colors duration-300 hover:bg-[#111] hover:text-[var(--color-beige)] active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-[#111] focus-visible:ring-offset-4 focus-visible:ring-offset-[var(--color-beige)] focus-visible:outline-none lg:top-[93.45%] lg:bottom-auto"
+            class="pointer-events-auto group absolute bottom-8 left-1/2 flex h-12.5 w-30.75 -translate-x-1/2 items-center gap-2 rounded-full border border-(--color-dark) px-5.5 pt-3 pb-3.5 text-base leading-6 font-normal tracking-normal text-(--color-dark) transition-colors duration-300 hover:bg-(--color-dark) hover:text-(--color-beige) focus-visible:ring-2 focus-visible:ring-(--color-dark) focus-visible:ring-offset-4 focus-visible:ring-offset-(--color-beige) focus-visible:outline-none active:scale-[0.97] lg:top-[93.45%] lg:bottom-auto"
             aria-controls="projects-gallery"
             :aria-expanded="isProjectsExpanded"
             @click.stop="revealProjects"
@@ -197,7 +190,7 @@ onUnmounted(() => {
             <span class="whitespace-nowrap"> Rozwiń </span>
 
             <svg
-              class="size-[16px] shrink-0 transition-transform duration-300 group-hover:translate-y-1"
+              class="size-4 shrink-0 transition-transform duration-300 group-hover:translate-y-1"
               viewBox="0 0 16 16"
               fill="none"
               stroke="currentColor"
@@ -217,7 +210,7 @@ onUnmounted(() => {
     <ProjectLightbox
       :is-open="isLightboxOpen"
       :project="activeProject"
-      :show-navigation="projects.length > 1"
+      :show-navigation="hasMultipleProjects"
       @close="closeLightbox"
       @previous="showPreviousProject"
       @next="showNextProject"
@@ -226,7 +219,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* jedna kolumna na telefonach. */
+/* ułóż galerię w jednej kolumnie na telefonach */
 .gallery-sizer,
 .gallery-item {
   width: 100%;
@@ -244,7 +237,7 @@ onUnmounted(() => {
   margin-bottom: 0;
 }
 
-/* dwie kolumny na tabletach. */
+/* ułóż galerię w dwóch kolumnach na tabletach */
 @media (width >= 768px) {
   .gallery-sizer,
   .gallery-item {
@@ -260,7 +253,7 @@ onUnmounted(() => {
   }
 }
 
-/* trzy kolumny na desktopie. */
+/* ułóż galerię w trzech kolumnach na desktopie */
 @media (width >= 1024px) {
   .gallery-sizer,
   .gallery-item {
@@ -292,10 +285,11 @@ onUnmounted(() => {
 }
 
 .projects-cover-leave-to {
-  transform: translateY(105%);
   opacity: 0;
+  transform: translateY(105%);
 }
 
+/* skróć animację, gdy użytkownik ograniczył ruch w systemie */
 @media (prefers-reduced-motion: reduce) {
   .projects-cover-leave-active {
     transition-duration: 1ms;
